@@ -1,4 +1,5 @@
 import pymysql
+import matplotlib.pyplot as plt
 
 def work(name):
     # Use a breakpoint in the code line below the debug your script.
@@ -19,7 +20,7 @@ def work(name):
 
 
 
-
+    """
     print("Several Filter Functionalities")
     try:
         print("Filter by Device Type")
@@ -63,7 +64,7 @@ def work(name):
     except pymysql.Error as e:
         code, msg = e.args
         print("Error retrieving data from the db", code, msg)
-
+    
 
     print("There are other functionailities that exist such as moving the medial device to the appropriate room that the device is needed in ")
     try:
@@ -82,10 +83,50 @@ def work(name):
 
 
 
+    print("ordering the device by quantity")
+    try:
+        print("Order Device ")
+        c5 = connection.cursor()  # shouldn't reuse cursors
+        # calling procedure by its string
+        c5.callproc('mostQuantity2', )  # second part department, is the list of parameters to the specific proceudre get_department
+        all_device = c5.fetchall()
+        for row in all_device:
+            print(row)
+
+        quantities = [row['quantity'] for row in all_device]
+        devices = [row['device_id'] for row in all_device]
+        plt.bar(devices, quantities)
+        plt.xlabel('Device')
+        plt.ylabel('Quantity')
+        plt.title('Device Quantity')
+        plt.show()
+        c5.close()
+
+    except pymysql.Error as e:
+        code, msg = e.args
+        print("Error retrieving data from the db", code, msg)
+    """
+    print("List of all Examinations of a specific patient")
+    try:
+        first = input("Enter patient first name: ")
+        last = input("Enter patient last name: ")
+
+        c6 = connection.cursor()  # shouldn't reuse cursors
+        # calling procedure by its string
+        c6.callproc(
+            'allExam', [first, last] )  # second part department, is the list of parameters to the specific proceudre get_department
+        for row in c6.fetchall():
+            print(row)
+        c6.close()
+    except pymysql.Error as e:
+        code, msg = e.args
+        print("Error retrieving data from the db", code, msg)
 
 
 
     connection.close()
+
+
 
 
 if __name__ == '__main__':
