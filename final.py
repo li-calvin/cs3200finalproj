@@ -149,7 +149,72 @@ def work(name):
                 # User is already authenticated, perform administrative tasks
                 print("Performing administrative tasks...")
                 # Add your code for the administrative tasks here
-                pass
+                print("\nPlease select an option:")
+                print("1. Add Room")
+                print("2. Remove Room")
+                print("3. Add Hospital")
+                print("4. Remove Hospital")
+                print("0. Exit")
+                option_choice = input("Enter your choice (0-4): ")
+
+                if option_choice == "1":
+                    try:
+                        con = connection.cursor()
+                    
+                        room_num = input ("Please enter the room number you want to add: ")
+                        hosp_id = input ("Please enter the corresponding hospital id: ")
+                        
+                        con.callproc("addRoom", (room_num, hosp_id))
+                    
+                        con.close()
+                    except:
+                        print('Error: %d: %s' % (e.args[0], e.args[1]))
+
+                elif option_choice == "2":    
+                    try:
+                        con2 = connection.cursor()
+                    
+                        room_num = input ("Please enter the room number you want to add: ")
+                        hosp_id = input ("Please enter the corresponding hospital id: ")
+                        
+                        con.callproc("removeRoom", (room_num, hosp_id))
+                    
+                        con2.close()
+                    except:
+                        print('Error: %d: %s' % (e.args[0], e.args[1]))
+                    
+                elif option_choice == "3":
+                    try:
+                        con4 = connection.cursor()
+                    
+                        hosp_id = input ("Please enter the new hospital's id: ")
+                        hosp_name = input ("Please enter the new hospital's name: ")
+                        hosp_streetnum = input ("Please enter the new hospital's street number: ")
+                        hosp_streetname = input ("Please enter the new hospital's street name: ")
+                        hosp_town = input ("Please enter the new hospital's town: ")
+                        hosp_state = input ("Please enter the new hospital's state: ")
+                        hosp_zipcode = input ("Please enter the new hospital's zipcode: ")
+                        
+                        con4.callproc("addHosp", (hosp_id, hosp_name. hosp_streetnum, hosp_streetname, hosp_town, hosp_state, hosp_zipcode))
+                    
+                        con4.close()
+                    except:
+                        print('Error: %d: %s' % (e.args[0], e.args[1]))
+                
+                elif option_choice == "4":
+                    try:
+                        con3 = connection.cursor()
+                    
+                        hosp_id = input ("Please enter the hospital id that you wish to delete: ")
+                        
+                        con.callproc("removeHospital", (hosp_id))
+                    
+                        con3.close()
+                    except:
+                        print('Error: %d: %s' % (e.args[0], e.args[1]))
+
+                elif option_choice == "0":
+                    break
 
                 # After performing administrative tasks, give the option to go back to the main menu or exit
                 while True:
