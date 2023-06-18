@@ -159,7 +159,7 @@ def work(name):
 
                 if option_choice == "1":
                     try:
-                        con = cnx.cursor()
+                        con = connection.cursor()
                     
                         room_num = input ("Please enter the room number you want to add: ")
                         hosp_id = input ("Please enter the corresponding hospital id: ")
@@ -172,7 +172,7 @@ def work(name):
 
                 elif option_choice == "2":    
                     try:
-                        con2 = cnx.cursor()
+                        con2 = connection.cursor()
                     
                         room_num = input ("Please enter the room number you want to add: ")
                         hosp_id = input ("Please enter the corresponding hospital id: ")
@@ -185,7 +185,7 @@ def work(name):
                     
                 elif option_choice == "3":
                     try:
-                        con4 = cnx.cursor()
+                        con4 = connection.cursor()
                     
                         hosp_id = input ("Please enter the new hospital's id: ")
                         hosp_name = input ("Please enter the new hospital's name: ")
@@ -203,7 +203,7 @@ def work(name):
                 
                 elif option_choice == "4":
                     try:
-                        con3 = cnx.cursor()
+                        con3 = connection.cursor()
                     
                         hosp_id = input ("Please enter the hospital id that you wish to delete: ")
                         
