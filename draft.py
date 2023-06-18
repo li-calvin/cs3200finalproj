@@ -21,7 +21,6 @@ def work(name):
     # Define the correct admin username and password
     admin_username = "admin"
     admin_password = "password"
-    incorrect_attempts = 0
     authenticated = False
 
     # Display the main menu options
@@ -87,19 +86,21 @@ def work(name):
 
                     if filter_option == "1":
                         # Add code to filter devices by category
-                        try:
-                            print("Filter by Device Type")
-                            type = input("Enter Device Type: ")
-                            c1 = connection.cursor()  # shouldn't reuse cursors
-                            # calling procedure by its string
-                            c1.callproc('filterType', (
-                                type,))  # second part department, is the list of parameters to the specific proceudre get_department
-                            for row in c1.fetchall():
-                                print(row)
+                        while True:
+                            try:
+                                print("Filter by Device Type")
+                                device_type = input("Enter Device Type: ")
+                                c1 = connection.cursor()
+                                c1.callproc('filterType', (device_type,))
+                                for row in c1.fetchall():
+                                    print(row)
+                                c1.close()
+                                break  # Break out of the loop if no error occurs
 
-                        except pymysql.Error as e:
-                            code, msg = e.args
-                            print("Error retrieving data from the db", code, msg)
+                            except pymysql.Error as e:
+                                code, msg = e.args
+                                print("Error retrieving data from the database:", code, msg)
+                                print("Please try again.\n")
 
                     elif filter_option == "0":
                         # Return to the main menu
@@ -120,8 +121,10 @@ def work(name):
             if not authenticated:
                 # Option 4: Perform administrative tasks
                 # Initialize variables to store user input
+                incorrect_attempts = 0
                 ausername = ""
                 apassword = ""
+
 
                 # Loop until valid credentials are provided or maximum attempts are reached
                 while ausername != admin_username or apassword != admin_password:
@@ -146,6 +149,7 @@ def work(name):
                 # User is already authenticated, perform administrative tasks
                 print("Performing administrative tasks...")
                 # Add your code for the administrative tasks here
+                pass
 
                 # After performing administrative tasks, give the option to go back to the main menu or exit
                 while True:
