@@ -18,6 +18,33 @@ def work(name):
         code, msg = e.args
         print("Cannot connect to the database", code, msg)
 
+    # Define the correct admin username and password
+    admin_username = "admin"
+    admin_password = "password"
+
+    # Prompt user if they want to perform administrative tasks
+    choice = input("Do you want to perform administrative tasks? (yes/no): ")
+
+    # Check user's choice
+    if choice.lower() == "yes":
+        # Loop until valid credentials are provided
+        while ausername != admin_username or apassword != admin_password:
+            # Prompt user for username and password
+            ausername = input("Enter your username: ")
+            apassword = input("Enter your password: ")
+
+            # Check if username and password are correct
+            if ausername == admin_username and apassword == admin_password:
+                # Perform administrative tasks
+                pass
+
+            else:
+                # Invalid username or password
+                print("Access denied. Invalid username or password. Please try again.")
+    else:
+        # User doesn't want to perform administrative tasks
+        pass
+
 
 
     """
@@ -105,7 +132,7 @@ def work(name):
     except pymysql.Error as e:
         code, msg = e.args
         print("Error retrieving data from the db", code, msg)
-    """
+    
     print("List of all Examinations of a specific patient")
     try:
         first = input("Enter patient first name: ")
@@ -121,7 +148,7 @@ def work(name):
     except pymysql.Error as e:
         code, msg = e.args
         print("Error retrieving data from the db", code, msg)
-
+    """
 
 
     connection.close()
