@@ -46,6 +46,8 @@ def work(name):
             print("Viewing your information...")
             # Add your code for viewing user information here
 
+
+
         elif option == "3":
             while True:
                 # Option 3: View devices
