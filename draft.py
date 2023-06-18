@@ -29,6 +29,8 @@ def work(name):
     # Display the main menu options
     print("Welcome to the main menu")
 
+    choice = "no"  # Initialize the choice variable
+
     # Prompt user for additional options
     while True:
         print("\nPlease select an option:")
@@ -36,8 +38,16 @@ def work(name):
         print("2. View your information")
         print("3. View devices")
         print("4. Perform administrative tasks")
+        print("5. View your patients")
         print("0. Exit")
-        option = input("Enter your choice (0-4): ")
+        option = input("Enter your choice (0-5): ")
+
+        # if choice.lower() == "yes":
+        #     option = "3"  # Set the option to 3 (View devices) if the user chooses to search for new devices
+        #     choice = "no"  # Reset the choice to "no" to avoid re-entering the prompt for searching new devices
+        #     continue  # Skip the input prompt in the main menu and directly enter the elif statement for option 3
+        # else:
+        #     option = input("Enter your choice (0-4): ")
 
         if option == "1":
             # Option 1: Create new medical device entry
@@ -77,7 +87,7 @@ def work(name):
                 c6 = connection.cursor()  # shouldn't reuse cursors
                 # calling procedure by its string
                 c6.callproc(
-                    'filterDoctor', [dfname, dlname] )  # second part department, is the list of parameters to the specific proceudre get_department
+                    'filterDoctor', [d_id])  # second part department, is the list of parameters to the specific proceudre get_department
                 for row in c6.fetchall():
                     print(row)
 
@@ -85,24 +95,38 @@ def work(name):
                 code, msg = e.args
                 print("Error retrieving data from the database:", code, msg)
 
-            print("Your Patient(s)")
-            try:
-                c7 = connection.cursor()  # shouldn't reuse cursors
-                # calling procedure by its string
-                c7.callproc(
-                    'filterPatient', [dfname, dlname] )  # second part department, is the list of parameters to the specific proceudre get_department
-                for row in c7.fetchall():
-                    print(row)
+            # print("Your Patient(s)")
+            # try:
+            #     c7 = connection.cursor()  # shouldn't reuse cursors
+            #     # calling procedure by its string
+            #     c7.callproc(
+            #         'filterPatient', [d_id] )  # second part department, is the list of parameters to the specific proceudre get_department
+            #     for row in c7.fetchall():
+            #         print(row)
+            #
+            # except pymysql.Error as e:
+            #     code, msg = e.args
+            #     print("Error retrieving data from the database:", code, msg)
 
-            except pymysql.Error as e:
-                code, msg = e.args
-                print("Error retrieving data from the database:", code, msg)
+        # Ask the user if they want to search for new devices
+            choice = input("Do you want to request a device? (yes/no): ")
+            if choice.lower() == "yes":
+                option = "3"
+            elif choice.lower() == "no":
+                while True:
+                    admin_option = input("\nEnter 'menu' to go back to the main menu or 'exit' to exit the code: ")
+                    if admin_option == "menu":
+                        break
+                    elif admin_option == "exit":
+                        print("Exiting the code...")
+                        exit()
+                    else:
+                        print("Invalid option. Please choose again.")
 
-
-
-
-
-        elif option == "3":
+        if option == "3":
+            # if option == "3":
+            #     view_devices = True
+            # if view_devices:
             while True:
                 # Option 3: View devices
                 print("Viewing devices...")
@@ -134,11 +158,11 @@ def work(name):
 
                 while True:
                     print("\nPlease select a filtering option:")
-                    print("1. Filter devices by category")
-                    print("2. Filter devices by price range")
-                    print("3. Filter devices by availability")
+                    print("1. Filter devices by device type")
+                    print("2. Filter devices by hospital")
+                    print("3. Filter which room contains specified device")
                     print("0. Return to the main menu")
-                    filter_option = input("Enter your choice (0-3): ")
+                    filter_option = input("Enter your choice (0-4): ")
 
                     if filter_option == "1":
                         # Add code to filter devices by category
@@ -157,6 +181,43 @@ def work(name):
                                 code, msg = e.args
                                 print("Error retrieving data from the database:", code, msg)
                                 print("Please try again.\n")
+
+                    elif filter_option == "2":
+                        # Add code to filter devices by category
+                        while True:
+                            try:
+                                print("Filter by Hospital")
+                                hosp = input("Enter Hospital: ")
+                                c2 = connection.cursor()
+                                c2.callproc('filterHospital', (hosp,))
+                                for row in c2.fetchall():
+                                    print(row)
+                                c2.close()
+                                break  # Break out of the loop if no error occurs
+
+                            except pymysql.Error as e:
+                                code, msg = e.args
+                                print("Error retrieving data from the database:", code, msg)
+                                print("Please try again.\n")
+
+                    elif filter_option == "3":
+                        # Add code to filter devices by category
+                        while True:
+                            try:
+                                print("Where specified device is located")
+                                device = input("What device are you locating: ")
+                                c3 = connection.cursor()
+                                c3.callproc('filterRoom', (device,))
+                                for row in c3.fetchall():
+                                    print(row)
+                                c3.close()
+                                break  # Break out of the loop if no error occurs
+
+                            except pymysql.Error as e:
+                                code, msg = e.args
+                                print("Error retrieving data from the database:", code, msg)
+                                print("Please try again.\n")
+
 
                     elif filter_option == "0":
                         # Return to the main menu
@@ -281,6 +342,21 @@ def work(name):
                         exit()
                     else:
                         print("Invalid option. Please choose again.")
+        elif option == "5":
+            print("Your Patient(s)")
+            try:
+                c7 = connection.cursor()  # shouldn't reuse cursors
+                # calling procedure by its string
+                c7.callproc(
+                    'filterPatient', [
+                        d_id])  # second part department, is the list of parameters to the specific proceudre get_department
+                for row in c7.fetchall():
+                    print(row)
+
+            except pymysql.Error as e:
+                code, msg = e.args
+                print("Error retrieving data from the database:", code, msg)
+
 
         elif option == "0":
             # Option 0: Exit the program
@@ -290,6 +366,8 @@ def work(name):
         else:
             # Invalid option
             print("Invalid option. Please choose again.")
+
+
 
 
 if __name__ == '__main__':

@@ -119,15 +119,15 @@ INSERT INTO med_device (device_id, device_name, lengt, width, height, life_invol
 
 
 
-DROP TABLE IF EXISTS room_hospital;
-CREATE TABLE room_hospital(
+DROP TABLE IF EXISTS room;
+CREATE TABLE room(
 	room_num  int NOT NULL,
     hospital_id INT, 
     PRIMARY KEY ( room_num, hospital_id), 
     foreign key (hospital_id) REFERENCES hospital(hospital_id) 
     ON UPDATE CASCADE ON DELETE RESTRICT 
 );
-INSERT IGNORE INTO room (room_id, second_number)
+INSERT IGNORE INTO room (room_num, hospital_id)
 VALUES
     (100, 1),
     (101, 1),
@@ -260,26 +260,25 @@ VALUES
     (1000010, 1005);
 */
 
-
-DROP TABLE IF EXISTS room_med_device; 
+    
+DROP TABLE IF EXISTS room_med_device;
 CREATE TABLE room_med_device (
-	device_id INT, 
-    room_num  int, 
-	PRIMARY KEY(room_num, device_id), 
-	foreign key (device_id) REFERENCES med_device(device_id) 
-		ON UPDATE CASCADE ON DELETE RESTRICT, 
-	foreign key (room_num) REFERENCES room(room_num ) 
-		ON UPDATE CASCADE ON DELETE RESTRICT
-); 
-INSERT INTO room_med_device (device_id, room_num)
+    device_id INT,
+    room_num INT,
+    hospital_id INT,
+    PRIMARY KEY (room_num, device_id, hospital_id),
+    FOREIGN KEY (device_id) REFERENCES med_device(device_id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    FOREIGN KEY (room_num, hospital_id) REFERENCES room(room_num, hospital_id) ON UPDATE CASCADE ON DELETE RESTRICT
+);
+INSERT INTO room_med_device (device_id, room_num, hospital_id)
 VALUES
-    (1001, 101),
-    (1002, 102),
-    (1003, 103),
-    (1004, 104),
-    (1005, 105),
-    (1006, 106),
-    (1007, 105);
+    (1001, 101, 1),
+    (1002, 102, 1),
+    (1003, 103, 2),
+    (1004, 104, 1),
+    (1005, 105, 3),
+    (1006, 106, 1),
+    (1007, 105, 3);
 
 
 # find all the medical device types (filter kind of ) 
@@ -289,10 +288,10 @@ VALUES
 # which room has the most medical devices compared to another one 
 
 DROP TABLE IF EXISTS room_patient; 
-CREATE TABLE room_med_device (
+CREATE TABLE room_patient(
     room_num  int, 
     pt_id INT, 
-	PRIMARY KEY(room_num, device_id), 
+	PRIMARY KEY(room_num, pt_id), 
 	foreign key (pt_id) REFERENCES patient(pt_id) 
 		ON UPDATE CASCADE ON DELETE RESTRICT, 
 	foreign key (room_num) REFERENCES room(room_num ) 

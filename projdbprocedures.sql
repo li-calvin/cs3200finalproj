@@ -143,16 +143,16 @@ DELIMITER ;
 CALL filter_byRoom(105); 
 
 
-DROP PROCEDURE IF EXISTS filter_byRoom2; 
+DROP PROCEDURE IF EXISTS filterRoom; 
 DELIMITER $$ 
-CREATE PROCEDURE filter_byRoom2(IN device_id_p INT)
+CREATE PROCEDURE filterRoom(IN device_id_p INT)
 BEGIN 
 	SELECT * FROM room_med_device 
     WHERE device_id = device_id_p; 
 END$$ 
 DELIMITER ; 
 
-CALL filter_byRoom2(1005); 
+CALL filterRoom(1005); 
 
 
 -- 3. Filter by Device Type (READ) 
@@ -240,47 +240,37 @@ CALL doctorInfo(901, 'John','Doe');
 -- 4. Filter by Doctor? input the name and you will receive the medical instruments that are checked out by that doctor 
 
 
-
 SELECT * FROM med_device INNER JOIN 
 examination USING(device_id); 
 
-
 DROP PROCEDURE IF EXISTS filterDoctor; 
 DELIMITER $$ 
-CREATE PROCEDURE filterDoctor(IN doc_first_name_p VARCHAR(64), IN doc_last_name_p VARCHAR(64))
+CREATE PROCEDURE filterDoctor(IN doctor_id_p INT)
 BEGIN 
-	DECLARE doctor_id_temp INT;
-
-	SELECT doc_id INTO doctor_id_temp FROM doctor WHERE 
-          doc_first_name = doc_first_name_p and doc_last_name = doc_last_name_p;
-	
 	SELECT * FROM med_device as d INNER JOIN 
 	examination USING(device_id)
-    WHERE doc_id = doctor_id_temp;
+    WHERE doc_id = doctor_id_p;
 END$$ 
 DELIMITER ; 
 
-CALL filterDoctor('John','Doe'); 
+CALL filterDoctor(901); 
+
 
 -- not med devices but partients 
 
 
 DROP PROCEDURE IF EXISTS filterPatient; 
 DELIMITER $$ 
-CREATE PROCEDURE filterPatient(IN doc_first_name_p VARCHAR(64), IN doc_last_name_p VARCHAR(64))
+CREATE PROCEDURE filterPatient(IN doctor_id_p INT)
 BEGIN 
-	DECLARE doctor_id_temp INT;
-	SELECT doc_id INTO doctor_id_temp FROM doctor WHERE 
-          doc_first_name = doc_first_name_p and doc_last_name = doc_last_name_p;
-	
 	SELECT p.* FROM patient as p INNER JOIN 
 	examination USING(pt_id)
-    WHERE doc_id = doctor_id_temp
+    WHERE doc_id = doctor_id_p
 	GROUP BY pt_id; 
 END$$ 
 DELIMITER ; 
 
-CALL filterPatient('John','Doe'); 
+CALL filterPatient(901); 
 
 
 
@@ -575,16 +565,16 @@ CALL removePatient(20);
 
 
 -- 12. Filter By Hospital 
-DROP PROCEDURE IF EXISTS filter_Hospital; 
+DROP PROCEDURE IF EXISTS filterHospital; 
 DELIMITER $$ 
-CREATE PROCEDURE filter_Hospital(IN hospital_id_p INT)
+CREATE PROCEDURE filterHospital(IN hospital_id_p INT)
 BEGIN 
 	SELECT * FROM med_device 
     WHERE hospital_id = hospital_id_p; 
 END$$ 
 DELIMITER ; 
 
-CALL filter_Hospital(1); 
+CALL filterHospital(1); 
 
 -- Proc
 DROP PROCEDURE IF EXISTS addRoom; 
