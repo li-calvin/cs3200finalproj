@@ -162,13 +162,25 @@ DROP PROCEDURE IF EXISTS filterType;
 DELIMITER $$ 
 CREATE PROCEDURE filterType(IN category_p VARCHAR(64))
 BEGIN 
+	DECLARE count_category INT; 
+-- need to check on the existence of the room 
+	SELECT COUNT(*) INTO count_category
+	FROM med_device 
+	INNER JOIN med_device_type USING (device_id) 
+	WHERE category = category_p; 
+	
+	IF count_category > 0 THEN 
 	SELECT d.* FROM med_device as d 
     INNER JOIN med_device_type USING (device_id) 
 		WHERE category = category_p; 
+	ELSEIF count_category = 0 THEN 
+		SIGNAL SQLSTATE '45000'
+		SET MESSAGE_TEXT = 'category doesnt exist';
+	END IF; 
 END$$ 
 DELIMITER ; 
 
-CALL filterType('Life Preservation'); 
+CALL filterType('Life Preservatio'); 
 
 -- consolidated list of all of the device_id from med_device_type for easy access for 
 DROP PROCEDURE IF EXISTS filterType_grouped; 
@@ -200,8 +212,34 @@ DELIMITER ;
 
 SELECT filterType_grouped2('Life Preservation'); 
 
+-- FInd doctor information 
+DROP PROCEDURE IF EXISTS doctorInfo; 
+DELIMITER $$ 
+CREATE PROCEDURE doctorInfo(IN doctor_id_p INT, IN doc_first_name_p VARCHAR(64), IN doc_last_name_p VARCHAR(64))
+BEGIN 
+	DECLARE count_doctor INT; 
+-- need to check on the existence of the room 
+	SELECT COUNT(*) INTO count_doctor
+	FROM doctor 
+	WHERE doc_id = doctor_id_p and doc_first_name = doc_first_name_p and  doc_last_name = doc_last_name_p;
+    
+	IF count_doctor > 0 THEN 
+		SELECT * FROM doctor
+		WHERE doc_id = doctor_id_p;
+    ELSEIF count_doctor = 0 THEN 
+		SIGNAL SQLSTATE '45000'
+		SET MESSAGE_TEXT = 'Invalid Doctor Name or ID';
+    END IF; 
+END$$ 
+DELIMITER ; 
+
+CALL doctorInfo(901, 'John','Doe'); 
+
+
 
 -- 4. Filter by Doctor? input the name and you will receive the medical instruments that are checked out by that doctor 
+
+
 
 SELECT * FROM med_device INNER JOIN 
 examination USING(device_id); 
@@ -223,6 +261,27 @@ END$$
 DELIMITER ; 
 
 CALL filterDoctor('John','Doe'); 
+
+-- not med devices but partients 
+
+
+DROP PROCEDURE IF EXISTS filterPatient; 
+DELIMITER $$ 
+CREATE PROCEDURE filterPatient(IN doc_first_name_p VARCHAR(64), IN doc_last_name_p VARCHAR(64))
+BEGIN 
+	DECLARE doctor_id_temp INT;
+	SELECT doc_id INTO doctor_id_temp FROM doctor WHERE 
+          doc_first_name = doc_first_name_p and doc_last_name = doc_last_name_p;
+	
+	SELECT p.* FROM patient as p INNER JOIN 
+	examination USING(pt_id)
+    WHERE doc_id = doctor_id_temp
+	GROUP BY pt_id; 
+END$$ 
+DELIMITER ; 
+
+CALL filterPatient('John','Doe'); 
+
 
 
 

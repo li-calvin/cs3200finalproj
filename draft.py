@@ -5,6 +5,9 @@ def work(name):
     # Use a breakpoint in the code line below the debug your script.
     username = input("Enter username: ")
     pword = input("Enter password: ")
+    d_id = input("Doctor ID: ")
+    dfname = input("Doctor First Name: ")
+    dlname = input("Doctor Last Name: ")
 
     try:
         connection = pymysql.connect(
@@ -45,6 +48,57 @@ def work(name):
             # Option 2: View user information
             print("Viewing your information...")
             # Add your code for viewing user information here
+
+            while True:
+                try:
+                    print("Doctor Information")
+                    c4 = connection.cursor()
+                    c4.callproc('doctorInfo', (d_id, dfname, dlname))
+                    all_device = c4.fetchall()
+                    for row in all_device:
+                        print(row)
+                    c4.close()
+                    break  # Break out of the loop if the query succeeds
+
+                except pymysql.Error as e:
+                    code, msg = e.args
+                    print("Error retrieving data from the database:", code, msg)
+
+                    # Prompt user to re-enter the name
+                    print("Please re-enter your name.")
+                    d_id = input("Doctor ID: ")
+                    dfname = input("Doctor First Name: ")
+                    dlname = input("Doctor Last Name: ")
+
+
+            print("Your devices in use")
+            try:
+                print("Your Device(s)")
+                c6 = connection.cursor()  # shouldn't reuse cursors
+                # calling procedure by its string
+                c6.callproc(
+                    'filterDoctor', [dfname, dlname] )  # second part department, is the list of parameters to the specific proceudre get_department
+                for row in c6.fetchall():
+                    print(row)
+
+            except pymysql.Error as e:
+                code, msg = e.args
+                print("Error retrieving data from the database:", code, msg)
+
+            print("Your Patient(s)")
+            try:
+                c7 = connection.cursor()  # shouldn't reuse cursors
+                # calling procedure by its string
+                c7.callproc(
+                    'filterPatient', [dfname, dlname] )  # second part department, is the list of parameters to the specific proceudre get_department
+                for row in c7.fetchall():
+                    print(row)
+
+            except pymysql.Error as e:
+                code, msg = e.args
+                print("Error retrieving data from the database:", code, msg)
+
+
 
 
 
@@ -151,7 +205,71 @@ def work(name):
                 # User is already authenticated, perform administrative tasks
                 print("Performing administrative tasks...")
                 # Add your code for the administrative tasks here
-                pass
+                # Add your code for the administrative tasks here
+                print("\nPlease select an option:")
+                print("1. Add Room")
+                print("2. Remove Room")
+                print("3. Add Hospital")
+                print("4. Remove Hospital")
+                print("0. Exit")
+                option_choice = input("Enter your choice (0-4): ")
+
+                if option_choice == "1":
+                    try:
+                        con = connection.cursor()
+
+                        room_num = input("Please enter the room number you want to add: ")
+                        hosp_id = input("Please enter the corresponding hospital id: ")
+
+                        con.callproc("addRoom", (room_num, hosp_id))
+
+                        con.close()
+                    except:
+                        print('Error: %d: %s' % (e.args[0], e.args[1]))
+
+                elif option_choice == "2":
+                    try:
+                        con2 = connection.cursor()
+
+                        room_num = input("Please enter the room number you want to add: ")
+                        hosp_id = input("Please enter the corresponding hospital id: ")
+
+                        con.callproc("removeRoom", (room_num, hosp_id))
+
+                        con2.close()
+                    except:
+                        print('Error: %d: %s' % (e.args[0], e.args[1]))
+
+                elif option_choice == "3":
+                    try:
+                        con4 = connection.cursor()
+
+                        hosp_id = input("Please enter the new hospital's id: ")
+                        hosp_name = input("Please enter the new hospital's name: ")
+                        hosp_streetnum = input("Please enter the new hospital's street number: ")
+                        hosp_streetname = input("Please enter the new hospital's street name: ")
+                        hosp_town = input("Please enter the new hospital's town: ")
+                        hosp_state = input("Please enter the new hospital's state: ")
+                        hosp_zipcode = input("Please enter the new hospital's zipcode: ")
+
+                        con4.callproc("addHosp", (
+                        hosp_id, hosp_name.hosp_streetnum, hosp_streetname, hosp_town, hosp_state, hosp_zipcode))
+
+                        con4.close()
+                    except:
+                        print('Error: %d: %s' % (e.args[0], e.args[1]))
+
+                elif option_choice == "4":
+                    try:
+                        con3 = connection.cursor()
+
+                        hosp_id = input("Please enter the hospital id that you wish to delete: ")
+
+                        con.callproc("removeHospital", (hosp_id))
+
+                        con3.close()
+                    except:
+                        print('Error: %d: %s' % (e.args[0], e.args[1]))
 
                 # After performing administrative tasks, give the option to go back to the main menu or exit
                 while True:
