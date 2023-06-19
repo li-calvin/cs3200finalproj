@@ -59,7 +59,7 @@ def work(name):
         print("3. Perform administrative tasks")
         print("4. View your patients")
         print("0. Exit")
-        option = input("Enter your choice (0-5): ")
+        option = input("Enter your choice (0-4): ")
 
 
             #
@@ -393,19 +393,27 @@ def work(name):
                 # Add a patient
                 # Code to add a patient to the database
                     while True:
-                        values = input("Enter a list of patient values separated by commas: (e.g 20, Ace, Ventura, 2023-06-20 14:30:00, hospital) ")
+                        try:
+                            c10 = connection.cursor()  # shouldn't reuse cursors
+                            # calling procedure by its string
+                            c10.callproc(
+                                'availableRooms', [d_id])  # second part department, is the list of parameters to the specific proceudre get_department
+                            available_rooms = c10.fetchall()
+                            print("These are the available rooms in the current doctor hospital you can assign patient to")
+                            print(available_rooms)
+                        except pymysql.Error as e:
+                            code, msg = e.args
+                            print("Error retrieving data from the database:", code, msg)
+
+                        values = input("Enter patient first name, last name, check in, and room number separated by commas : (e.g Ace, Ventura, 2023-06-20 14:30:00, 101")
                         value_list = values.split(",")
 
-                        if len(value_list) != 5:
-                            print("Invalid number of values. Please enter 6 values.")
+                        if len(value_list) != 4:
+                            print("Invalid number of values. Please enter 4 values.")
                             continue
 
-                        pt_id, pt_fname, pt_lname, pt_in, hosp = [value.strip() for value in value_list]
-                        print(pt_id, pt_fname, pt_lname, pt_in, hosp)
-
-                        if not pt_id.isdigit() or not pt_id:
-                            print("Patient Id is not an integer")
-                            continue
+                        pt_fname, pt_lname, pt_in, room_n = [value.strip() for value in value_list]
+                        print(pt_fname, pt_lname, pt_in, room_n)
 
                         if not pt_fname.isalpha() or not pt_fname:
                             print("Invalid value: pt_fname must be a non-empty string.")
@@ -415,15 +423,18 @@ def work(name):
                             print("Invalid value: pt_lname must be a non-empty string.")
                             continue
 
-                        if not hosp.isalpha() or not hosp:
-                            print("Invalid value: hosp must be a non-empty string.")
-                            continue
-
                         try:
                             datetime.strptime(pt_in, "%Y-%m-%d %H:%M:%S")
                         except ValueError:
                             print("Invalid value: pt_in must be a valid datetime in the format 'YYYY-MM-DD HH:MM:SS'.")
                             continue
+
+
+                        # print(all_patients)
+                        for row in available_rooms:
+                            # print(type(row['pt_id']))
+                            if room_n.isdigit() and int(room_n) == row['room_num']:
+                                continue
 
                         break
 
@@ -431,7 +442,7 @@ def work(name):
                         c9 = connection.cursor()  # shouldn't reuse cursors
                         # calling procedure by its string
                         c9.callproc(
-                            'createPatient', [pt_id, pt_fname, pt_lname, pt_in, hosp])  # second part department, is the list of parameters to the specific proceudre get_department
+                            'createPatient', [pt_fname, pt_lname, pt_in, room_n, d_id])  # second part department, is the list of parameters to the specific proceudre get_department
 
                     except pymysql.Error as e:
                         code, msg = e.args
@@ -486,7 +497,7 @@ def work(name):
                         # print(all_patients)
                         for row in all_patients:
                             # print(type(row['pt_id']))
-                            if int(pt_id) == row['pt_id']:
+                            if pt_id.isdigit() and int(pt_id) == row['pt_id']:
                                 match_found = True
                                 break
 

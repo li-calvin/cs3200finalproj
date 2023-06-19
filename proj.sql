@@ -54,6 +54,44 @@ VALUES
   (910, 'Jessica', 'Lee', 'Psychiatry', 10);
 
 
+DROP TABLE IF EXISTS room;
+CREATE TABLE room(
+	room_num  int NOT NULL,
+    hospital_id INT, 
+    PRIMARY KEY (room_num, hospital_id), 
+    foreign key (hospital_id) REFERENCES hospital(hospital_id) 
+    ON UPDATE CASCADE ON DELETE RESTRICT 
+);
+INSERT IGNORE INTO room (room_num, hospital_id)
+VALUES
+    (100, 1),
+    (101, 1),
+    (200, 1),
+    (201, 1),
+    (102, 2),
+    (103, 2),
+    (202, 2),
+    (203, 2),
+    (104, 3),
+    (105, 3),
+    (204, 3),
+    (205, 3),
+    (106, 4),
+    (206, 4),
+    (107, 5),
+    (207, 5),
+    (108, 6),
+    (208, 6),
+    (109, 7),
+    (209, 7),
+    (110, 8), 
+    (210, 8),
+    (111, 9), 
+    (211, 9), 
+    (112, 10), 
+    (212, 10);
+    
+
 DROP TABLE IF EXISTS  patient ;
 CREATE TABLE  patient (
 	 pt_id int NOT NULL auto_increment,
@@ -61,24 +99,23 @@ CREATE TABLE  patient (
      pt_last_name  varchar(100) NOT NULL,
      check_in  DATETIME NOT NULL,
      check_out  DATETIME DEFAULT NULL ,
-    PRIMARY KEY ( pt_id ), 
+    PRIMARY KEY ( pt_id ),
+    room_num INT, 
     hospital_id INT, 
-    foreign key (hospital_id) REFERENCES hospital(hospital_id) 
-    ON UPDATE CASCADE ON DELETE RESTRICT 
-    
+    FOREIGN KEY (room_num, hospital_id) REFERENCES room(room_num, hospital_id) ON UPDATE CASCADE ON DELETE RESTRICT
 ); 
-
-INSERT INTO patient (pt_id, pt_first_name, pt_last_name, check_in, check_out, hospital_id)
+-- add room here 
+INSERT INTO patient (pt_id, pt_first_name, pt_last_name, check_in, check_out, room_num, hospital_id)
 VALUES
-  (11, 'John', 'Doe', '2023-06-01', '2023-06-02', 1),
-  (12, 'Jane', 'Smith', '2023-06-02', '2023-06-03', 2),
-  (13, 'Michael', 'Johnson', '2023-06-03', '2023-06-05', 3),
-  (14, 'Emily', 'Williams', '2023-06-04', '2023-06-06', 4),
-  (15, 'David', 'Brown', '2023-06-05', '2023-06-07', 5),
-  (16, 'Sarah', 'Taylor', '2023-06-06', '2023-06-07', 6),
-  (17, 'Robert', 'Anderson', '2023-06-06', '2023-06-08', 7),
-  (18, 'Jennifer', 'Clark', '2023-06-07', '2023-06-08', 8),
-  (19, 'William', 'Thomas', '2023-06-08', '2023-06-08', 9); 
+  (11, 'John', 'Doe', '2023-06-01', '2023-06-02', 100, 1),
+  (12, 'Jane', 'Smith', '2023-06-02', '2023-06-03', 102, 2),
+  (13, 'Michael', 'Johnson', '2023-06-03', '2023-06-05', 104, 3),
+  (14, 'Emily', 'Williams', '2023-06-04', '2023-06-06', 106, 4),
+  (15, 'David', 'Brown', '2023-06-05', '2023-06-07', 107, 5),
+  (16, 'Sarah', 'Taylor', '2023-06-06', '2023-06-07', 108, 6),
+  (17, 'Robert', 'Anderson', '2023-06-06', '2023-06-08', 109, 7),
+  (18, 'Jennifer', 'Clark', '2023-06-07', '2023-06-08', 110, 8),
+  (19, 'William', 'Thomas', '2023-06-08', '2023-06-08', 111, 9); 
 
 /*
 DROP TABLE IF EXISTS  bill ;
@@ -118,37 +155,6 @@ INSERT INTO med_device (device_id, device_name, lengt, width, height, life_invol
 	(1007, "IV Pull", 5, 7, 20, "Crucial to keeping the patients alive", 60, 2);
 
 
-
-DROP TABLE IF EXISTS room;
-CREATE TABLE room(
-	room_num  int NOT NULL,
-    hospital_id INT, 
-    PRIMARY KEY ( room_num, hospital_id), 
-    foreign key (hospital_id) REFERENCES hospital(hospital_id) 
-    ON UPDATE CASCADE ON DELETE RESTRICT 
-);
-INSERT IGNORE INTO room (room_num, hospital_id)
-VALUES
-    (100, 1),
-    (101, 1),
-    (102, 1),
-    (103, 2),
-    (104, 1),
-    (105, 3),
-    (106, 1),
-    (201, 2),
-    (202, 1),
-    (203, 4),
-    (204, 5),
-    (205, 1),
-    (206, 1),
-    (301, 2),
-    (302, 3),
-    (303, 3),
-    (304, 3),
-    (305, 1),
-    (306, 1);
-    
 DROP TABLE IF EXISTS device_type; 
 CREATE table device_type(
 category VARCHAR(64) PRIMARY KEY 
@@ -260,6 +266,7 @@ VALUES
     (1000010, 1005);
 */
 
+ 
     
 DROP TABLE IF EXISTS room_med_device;
 CREATE TABLE room_med_device (
@@ -267,18 +274,20 @@ CREATE TABLE room_med_device (
     room_num INT,
     hospital_id INT,
     PRIMARY KEY (room_num, device_id, hospital_id),
-    FOREIGN KEY (device_id) REFERENCES med_device(device_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    FOREIGN KEY (room_num, hospital_id) REFERENCES room(room_num, hospital_id) ON UPDATE CASCADE ON DELETE RESTRICT
+    FOREIGN KEY (device_id) REFERENCES med_device(device_id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (room_num, hospital_id) REFERENCES room(room_num, hospital_id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 INSERT INTO room_med_device (device_id, room_num, hospital_id)
 VALUES
     (1001, 101, 1),
-    (1002, 102, 1),
+    (1002, 102, 2),
     (1003, 103, 2),
-    (1004, 104, 1),
+    (1004, 104, 3),
     (1005, 105, 3),
-    (1006, 106, 1),
-    (1007, 105, 3);
+    (1006, 106, 4),
+    (1007, 107, 5);
+
+
 
 
 # find all the medical device types (filter kind of ) 
@@ -287,12 +296,3 @@ VALUES
 # move a medical devie from one room to another 
 # which room has the most medical devices compared to another one 
 
-DROP TABLE IF EXISTS room_patient; 
-CREATE TABLE room_patient(
-    room_num  int, 
-    pt_id INT, 
-    hospital_id INT,
-    PRIMARY KEY (room_num, pt_id, hospital_id),
-    FOREIGN KEY (pt_id) REFERENCES patient(pt_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    FOREIGN KEY (room_num, hospital_id) REFERENCES room(room_num, hospital_id) ON UPDATE CASCADE ON DELETE RESTRICT
-);

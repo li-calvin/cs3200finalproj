@@ -231,7 +231,20 @@ END$$
 DELIMITER ; 
 
 CALL isDoctor(900, 'John','Doe'); 
+ 
+-- your hospital 
+DROP PROCEDURE IF EXISTS yourHospital; 
+DELIMITER $$ 
+CREATE PROCEDURE yourHospital(IN doctor_id_p INT)
+BEGIN 
+-- need to check on the existence of the room 
+	SELECT hospital_id 
+	FROM doctor 
+	WHERE doc_id = doctor_id_p; 
+END$$ 
+DELIMITER ; 
 
+CALL yourHospital(901); 
 
 
 -- FInd doctor information 
@@ -498,45 +511,43 @@ CALL DeleteOldExaminations('2005-01-01');
 -- default for the checkout time is null 
 DROP PROCEDURE IF EXISTS createPatient; 
 DELIMITER $$ 
-CREATE PROCEDURE createPatient(IN pt_id_p INT, IN pt_first_name VARCHAR(100) , 
-								IN pt_last_name VARCHAR(100), 
+CREATE PROCEDURE createPatient(IN pt_first_name_p VARCHAR(100) , 
+								IN pt_last_name_p VARCHAR(100), 
                                 IN pt_check_in_p DATETIME, 
-                                IN hospital_name_p VARCHAR(64)) 
+                                IN d_id_p INT) 
 -- if this exists pt_id exists 
 -- return an error 
--- 
+
 
 BEGIN 
+DECLARE pt_id_temp INT; 
 DECLARE count_pt INT; 
 DECLARE hosp_id int;
-DECLARE count_hosp INT;
+
+SELECT pt_id INTO pt_id_temp 
+FROM patient 
+WHERE pt_first_name = pt_first_name_p and pt_last_name = pt_last_name_p; 
 
 SELECT COUNT(*) INTO count_pt
 FROM patient 
-WHERE pt_id = pt_id_p; 
+WHERE pt_id = pt_id_temp; 
 
 IF count_pt > 0 THEN 
 SIGNAL SQLSTATE '45000'
       SET MESSAGE_TEXT = 'Patient already exists';
 END IF; 
 
-SELECT COUNT(*) INTO count_hosp
-FROM hospital
-WHERE hospital_name = hospital_name_p; 
+SELECT hospital_id into hosp_id
+FROM doctor 
+WHERE doc_id = d_id_p; 
 
-IF count_hosp = 0 THEN -- NO TOWN in the table 
-    INSERT INTO hospital(hospital_name) VALUES (hospital_name_p);
-END IF;
-    
-SELECT hospital_id INTO hosp_id FROM hospital WHERE 
-         hospital_name = hospital_name_p; 
          
-INSERT INTO patient(pt_id, pt_first_name, pt_last_name, check_in, hospital_id) VALUES
-(pt_id_p, pt_first_name, pt_last_name, pt_check_in_p, hosp_id); 
+INSERT INTO patient(pt_first_name, pt_last_name, check_in, hospital_id) VALUES
+(pt_first_name_p, pt_last_name_p, pt_check_in_p, hosp_id); 
 end$$
 DELIMITER ;
 
-CALL createPatient(20, "Ace", "Ventura", '2023-06-15 14:30:00', 'New Hospital'); 
+CALL createPatient("Ace", "Ventura", '2023-06-15 14:30:00', 'New Hospital'); 
 
 -- 11. procedure where you're able to to add the time (check out procedure) 
 DROP PROCEDURE IF EXISTS enterCheckOut; 
@@ -598,7 +609,7 @@ BEGIN
 END$$ 
 DELIMITER ; 
 
-CALL filterHospital(1); 
+CALL filterHospital(13); 
 
 -- Proc
 DROP PROCEDURE IF EXISTS addRoom; 
