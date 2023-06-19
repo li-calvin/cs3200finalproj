@@ -212,6 +212,28 @@ DELIMITER ;
 
 SELECT filterType_grouped2('Life Preservation'); 
 
+-- Is doctor 
+DROP PROCEDURE IF EXISTS isDoctor; 
+DELIMITER $$ 
+CREATE PROCEDURE isDoctor(IN doctor_id_p INT, IN doc_first_name_p VARCHAR(64), IN doc_last_name_p VARCHAR(64))
+BEGIN 
+	DECLARE count_doctor INT; 
+-- need to check on the existence of the room 
+	SELECT COUNT(*) INTO count_doctor
+	FROM doctor 
+	WHERE doc_id = doctor_id_p and doc_first_name = doc_first_name_p and  doc_last_name = doc_last_name_p;
+    
+    IF count_doctor = 0 THEN 
+		SIGNAL SQLSTATE '45000'
+		SET MESSAGE_TEXT = 'Invalid Doctor Name or ID';
+    END IF; 
+END$$ 
+DELIMITER ; 
+
+CALL isDoctor(900, 'John','Doe'); 
+
+
+
 -- FInd doctor information 
 DROP PROCEDURE IF EXISTS doctorInfo; 
 DELIMITER $$ 
@@ -479,7 +501,6 @@ DELIMITER $$
 CREATE PROCEDURE createPatient(IN pt_id_p INT, IN pt_first_name VARCHAR(100) , 
 								IN pt_last_name VARCHAR(100), 
                                 IN pt_check_in_p DATETIME, 
-                                IN pt_check_out_p DATETIME, 
                                 IN hospital_name_p VARCHAR(64)) 
 -- if this exists pt_id exists 
 -- return an error 
@@ -494,8 +515,8 @@ SELECT COUNT(*) INTO count_pt
 FROM patient 
 WHERE pt_id = pt_id_p; 
 
-IF count_p > 0 THEN 
-SIGNAL SQLSTATE '2627'
+IF count_pt > 0 THEN 
+SIGNAL SQLSTATE '45000'
       SET MESSAGE_TEXT = 'Patient already exists';
 END IF; 
 
@@ -510,12 +531,12 @@ END IF;
 SELECT hospital_id INTO hosp_id FROM hospital WHERE 
          hospital_name = hospital_name_p; 
          
-INSERT INTO patient(pt_id, pt_first_name, pt_last_name, check_in, check_out, hospital_id) VALUES
-(pt_id_p, pt_first_name, pt_last_name, pt_check_in_p, pt_check_out_p, hosp_id); 
+INSERT INTO patient(pt_id, pt_first_name, pt_last_name, check_in, hospital_id) VALUES
+(pt_id_p, pt_first_name, pt_last_name, pt_check_in_p, hosp_id); 
 end$$
 DELIMITER ;
 
-CALL createPatient(20, "Ace", "Ventura", '2023-06-15 14:30:00', NULL, 'New Hospital'); 
+CALL createPatient(20, "Ace", "Ventura", '2023-06-15 14:30:00', 'New Hospital'); 
 
 -- 11. procedure where you're able to to add the time (check out procedure) 
 DROP PROCEDURE IF EXISTS enterCheckOut; 
@@ -552,16 +573,19 @@ BEGIN
 	FROM patient
 	WHERE pt_id_p = pt_id; 
     
+    
+    
     IF count_pt = 1 THEN -- Device exists, perform deletion
 	    DELETE FROM patient
 		WHERE pt_id = pt_id_p;
 	ELSEIF count_pt = 0 THEN -- Device doesn't exist
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Device does not exist';
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Patient does not exist';
 	END IF; 
 END //
 DELIMITER ;
 
 CALL removePatient(20); 
+
 
 
 -- 12. Filter By Hospital 

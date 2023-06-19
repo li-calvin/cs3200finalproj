@@ -56,7 +56,7 @@ VALUES
 
 DROP TABLE IF EXISTS  patient ;
 CREATE TABLE  patient (
-	 pt_id int NOT NULL,
+	 pt_id int NOT NULL auto_increment,
      pt_first_name  varchar(100) NOT NULL,
      pt_last_name  varchar(100) NOT NULL,
      check_in  DATETIME NOT NULL,
@@ -155,7 +155,7 @@ category VARCHAR(64) PRIMARY KEY
 );
 INSERT INTO device_type VALUES ('Surgical'),('Life Preservation'), ('Probing'), ('Monitoring'), ('Drug Delivering');
 
-
+  
 DROP TABLE IF EXISTS examination; 
 CREATE TABLE examination ( 
 examNo INT PRIMARY KEY, 
@@ -165,7 +165,7 @@ doc_id INT,
 device_id INT, 
 exam_date DATE, 
 foreign key (pt_id) REFERENCES patient(pt_id) 
-	ON UPDATE CASCADE ON DELETE RESTRICT, 
+	ON UPDATE CASCADE ON DELETE CASCADE, 
 foreign key (doc_id) REFERENCES doctor(doc_id) 
 	ON UPDATE CASCADE ON DELETE RESTRICT, 
 foreign key (device_id) REFERENCES med_device(device_id) 
@@ -291,9 +291,8 @@ DROP TABLE IF EXISTS room_patient;
 CREATE TABLE room_patient(
     room_num  int, 
     pt_id INT, 
-	PRIMARY KEY(room_num, pt_id), 
-	foreign key (pt_id) REFERENCES patient(pt_id) 
-		ON UPDATE CASCADE ON DELETE RESTRICT, 
-	foreign key (room_num) REFERENCES room(room_num ) 
-		ON UPDATE CASCADE ON DELETE RESTRICT
-); 
+    hospital_id INT,
+    PRIMARY KEY (room_num, pt_id, hospital_id),
+    FOREIGN KEY (pt_id) REFERENCES patient(pt_id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    FOREIGN KEY (room_num, hospital_id) REFERENCES room(room_num, hospital_id) ON UPDATE CASCADE ON DELETE RESTRICT
+);
