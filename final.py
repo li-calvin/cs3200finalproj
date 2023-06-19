@@ -154,6 +154,8 @@ def work(name):
                 print("2. Remove Room")
                 print("3. Add Hospital")
                 print("4. Remove Hospital")
+                print("5. Add Patient Entry")
+                print("6. Remove Patient")
                 print("0. Exit")
                 option_choice = input("Enter your choice (0-4): ")
 
@@ -177,7 +179,7 @@ def work(name):
                         room_num = input ("Please enter the room number you want to add: ")
                         hosp_id = input ("Please enter the corresponding hospital id: ")
                         
-                        con.callproc("removeRoom", (room_num, hosp_id))
+                        con2.callproc("removeRoom", (room_num, hosp_id))
                     
                         con2.close()
                     except:
@@ -185,7 +187,7 @@ def work(name):
                     
                 elif option_choice == "3":
                     try:
-                        con4 = connection.cursor()
+                        con3 = connection.cursor()
                     
                         hosp_id = input ("Please enter the new hospital's id: ")
                         hosp_name = input ("Please enter the new hospital's name: ")
@@ -195,21 +197,53 @@ def work(name):
                         hosp_state = input ("Please enter the new hospital's state: ")
                         hosp_zipcode = input ("Please enter the new hospital's zipcode: ")
                         
-                        con4.callproc("addHosp", (hosp_id, hosp_name. hosp_streetnum, hosp_streetname, hosp_town, hosp_state, hosp_zipcode))
+                        con3.callproc("addHosp", (hosp_id, hosp_name, hosp_streetnum, hosp_streetname, hosp_town, hosp_state, hosp_zipcode))
                     
-                        con4.close()
+                        con3.close()
                     except:
                         print('Error: %d: %s' % (e.args[0], e.args[1]))
                 
                 elif option_choice == "4":
                     try:
-                        con3 = connection.cursor()
+                        con4 = connection.cursor()
                     
                         hosp_id = input ("Please enter the hospital id that you wish to delete: ")
                         
-                        con.callproc("removeHospital", (hosp_id))
+                        con4.callproc("removeHospital", (hosp_id))
                     
-                        con3.close()
+                        con4.close()
+                    except:
+                        print('Error: %d: %s' % (e.args[0], e.args[1])) 
+                        
+                                    
+                elif option_choice == "5":
+                    try:
+                        con5 = connection.cursor()
+                    
+                        pid = input ("Please enter the new patient's id: ")
+                        pfname = input ("Please enter the patient's first name: ")
+                        plname = input ("Please enter the patient's last name: ")
+                        cintime = input ("Please enter patient's check-in time: ")
+                        couttime = input ("Please enter patient's check-out time: ")
+                        hospid = input ("Please enter the id of the hospital the patient is at: ")
+                        
+                        con5.callproc("addPatient", (pid, pfname, plname, cintime, couttime, hospid))
+                    
+                        con5.close()
+                    except:
+                        print('Error: %d: %s' % (e.args[0], e.args[1]))
+                
+
+                elif option_choice == "6":
+                    try:
+                        con6 = connection.cursor()
+
+                        pt_id = input ("Please enter the patient id of which you want to delete: ")
+                        hosp_id = input ("Please enter the hospital id of the patient: ")
+                        
+                        con6.callproc("removePatient", (pt_id, hosp_id))
+                    
+                        con6.close()
                     except:
                         print('Error: %d: %s' % (e.args[0], e.args[1]))
 
