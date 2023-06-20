@@ -243,11 +243,58 @@ def work(name):
                     while reprompt1 not in ["yes", "no"]:
                         reprompt1 = input(
                             "\nDo you want to continue filtering? (yes/no): ")
-                        break
 
                     if reprompt1.lower() == "yes":
                         continue
                     elif reprompt1.lower() == "no":
+
+                        # For prompting the user if they want to move a device
+                        prompt = ""
+                        while prompt not in ["yes", "no"]:
+                            prompt = input(
+                                "\nDo you want move device? (yes/no): ")
+
+                        if prompt.lower() == "yes":
+                            try:
+                                print("All rooms that exist")
+                                c12 = connection.cursor()  # can create cursor object using the connection
+                                query = 'SELECT * from room';  # basically the same thing as a question mark for a prepared statement
+                                #print(query)
+                                c12.execute(query)  # decoupling with argument have to execute using a query and a list of all the %s in deaprmetn argument
+                                all_rooms = c12.fetchall()  # to get all of the rows in c1 now after it is executed
+                                print(all_rooms)
+                            except pymysql.Error as e:
+                                code, msg = e.args  # this gives the message e.args[0] gives the state
+                                msg = e.args[1]
+                                code = e.args[0]
+                                print("Error retrieving data from the db", code, msg)
+
+                            while True:
+                                try:
+                                    print("Where specified device is located")
+                                    device = input("What device are you relocating: ")
+                                    old_room = input("What is the old location of this device")
+                                    old_hosp = input("What is the old hospital of this device")
+                                    new_room = input("What is the new location of this device")
+                                    new_hosp = input("What is the new hopital of this device")
+
+                                    c13 = connection.cursor()
+                                    c13.callproc('moveDevice', [device,old_room, old_hosp, new_room, new_hosp])
+                                    for row in c13.fetchall():
+                                        print(row)
+                                    c13.close()
+                                    print("Successful Relocation")
+                                    break  # Break out of the loop if no error occurs
+
+                                except pymysql.Error as e:
+                                    code, msg = e.args
+                                    print("Error retrieving data from the database:", code, msg)
+                                    print("Please try again.\n")
+
+
+                        elif prompt.lower() == "no":
+                            break
+
                         filter_menu = False
                         break
 
@@ -361,26 +408,44 @@ def work(name):
                     else:
                         print("Invalid option. Please choose again.")
         elif option == "4":
-            print("Your Patient(s)")
-            try:
-                c7 = connection.cursor()  # shouldn't reuse cursors
-                # calling procedure by its string
-                c7.callproc(
-                    'filterPatient', [
-                        d_id])  # second part department, is the list of parameters to the specific proceudre get_department
-                all_patients = c7.fetchall()
-                for row in all_patients:
-                    print(row)
-
-            except pymysql.Error as e:
-                code, msg = e.args
-                print("Error retrieving data from the database:", code, msg)
-
-            if not all_patients:
-                print("No patients found.")
+            # print("Your Patient(s)")
+            # try:
+            #     c7 = connection.cursor()  # shouldn't reuse cursors
+            #     # calling procedure by its string
+            #     c7.callproc(
+            #         'filterPatient', [
+            #             d_id])  # second part department, is the list of parameters to the specific proceudre get_department
+            #     all_patients = c7.fetchall()
+            #     for row in all_patients:
+            #         print(row)
+            #
+            # except pymysql.Error as e:
+            #     code, msg = e.args
+            #     print("Error retrieving data from the database:", code, msg)
+            #
+            # if not all_patients:
+            #     print("No patients found.")
 
             patient_menu = True
             while patient_menu:
+                print("Your Patient(s)")
+                try:
+                    c7 = connection.cursor()  # shouldn't reuse cursors
+                    # calling procedure by its string
+                    c7.callproc(
+                        'filterPatient', [
+                            d_id])  # second part department, is the list of parameters to the specific proceudre get_department
+                    all_patients = c7.fetchall()
+                    for row in all_patients:
+                        print(row)
+
+                except pymysql.Error as e:
+                    code, msg = e.args
+                    print("Error retrieving data from the database:", code, msg)
+
+                if not all_patients:
+                    print("No patients found.")
+
                 print("\nSelect an option:")
                 print("1. Add a patient")
                 print("2. Delete a patient")
@@ -413,7 +478,7 @@ def work(name):
                             continue
 
                         pt_fname, pt_lname, pt_in, room_n = [value.strip() for value in value_list]
-                        print(pt_fname, pt_lname, pt_in, room_n)
+                        # print(pt_fname, pt_lname, pt_in, room_n)
 
                         if not pt_fname.isalpha() or not pt_fname:
                             print("Invalid value: pt_fname must be a non-empty string.")
@@ -439,23 +504,24 @@ def work(name):
                         break
 
                     try:
-                        c9 = connection.cursor()  # shouldn't reuse cursors
+                        c11 = connection.cursor()  # shouldn't reuse cursors
                         # calling procedure by its string
-                        c9.callproc(
+                        c11.callproc(
                             'createPatient', [pt_fname, pt_lname, pt_in, room_n, d_id])  # second part department, is the list of parameters to the specific proceudre get_department
-
+                        print("Patient Created")
                     except pymysql.Error as e:
                         code, msg = e.args
                         print("Error retrieving data from the database:", code, msg)
 
                 elif sub_option == "2":
+                    b = True
                     if not all_patients:
                         print("No patients to delete")
+                        b = False
                         continue
 
                 # Delete a patient
                 # Code to delete a patient from the database
-                    b = True
                     while b == True:
                         pt_id = input("Enter patient id you want to delete from list above: ")
 
@@ -484,7 +550,7 @@ def work(name):
                             break
                         else:
                             print("Error: Patient doesn't match your list")
-
+                    break
 
                 elif sub_option == "3":
                     # Select a specific patient for further operations
@@ -507,26 +573,119 @@ def work(name):
                             while patient_options:
                                 # Display additional options for the selected patient
                                 print("\nAdditional Options for Patient:")
-                                print("1. Option 1")
-                                print("2. Option 2")
-                                print("3. Option 3")
+                                print("1. Update Check Out Time for New Patient")
+                                print("2. Ad Examination ")
+                                print("3. Archive Examinations")
+                                print("0. Main Menu")
 
                                 patient_option = ""
-                                while patient_option not in ["1", "2", "3"]:
+                                while patient_option not in ["0", "1", "2", "3"]:
                                     patient_option = input("Please enter a valid choice (0-3): ")
 
                                 if patient_option == "1":
                                     # Code for Option 1
-                                    pass
+                                    while True:
+                                        try:
+                                            patient = input("Patient that you want to insert check out for")
+                                            check_out = input("Check out time (e.g. 2023-06-20 14:30:00): ")
+                                            c14 = connection.cursor()  # shouldn't reuse cursors
+                                            # calling procedure by its string
+                                            c14.callproc(
+                                                'enterCheckout', [
+                                                    patient, check_out])  # second part department, is the list of parameters to the specific proceudre get_department
+                                            print("Update CheckOut Time Successful")
+                                            break
+
+
+                                        except pymysql.Error as e:
+                                            code, msg = e.args
+                                            print("Error retrieving data from the database:", code, msg)
 
                                 elif patient_option == "2":
-                                    # Code for Option 2
-                                    pass
+                                    while True:
+                                        values = input(
+                                            "Enter symptom, medical device, examDate: (e.g smpytom, 1007, 2023-06-20 14:30:00")
+                                        value_list = values.split(",")
+
+                                        if len(value_list) != 3:
+                                            print("Invalid number of values. Please enter 4 values.")
+                                            continue
+
+                                        symp, m_device, examDate = [value.strip() for value in value_list]
+                                        print(symp, m_device, examDate)
+
+                                        if not symp.isalpha() or not symp:
+                                            print("Invalid value: symptom must be a non-empty string.")
+                                            continue
+
+                                        if not m_device.isdigit() or not m_device:
+                                            print("Invalid value: pt_lname must be a non-empty string.")
+                                            continue
+
+                                        try:
+                                            datetime.strptime(examDate, "%Y-%m-%d %H:%M:%S")
+                                        except ValueError:
+                                            print(
+                                                "Invalid value: pt_in must be a valid datetime in the format 'YYYY-MM-DD HH:MM:SS'.")
+                                            continue
+
+
+
+                                        try:
+                                            c15 = connection.cursor()  # shouldn't reuse cursors
+                                            # calling procedure by its string
+                                            c15.callproc(
+                                                'addExam', [symp, pt_id, m_device, examDate
+                                                    ])  # second part department, is the list of parameters to the specific proceudre get_department
+                                            all_patients = c15.fetchall()
+                                            for row in all_patients:
+                                                print(row)
+                                            print("Successful Exam Entry")
+                                            break
+
+                                        except pymysql.Error as e:
+                                            code, msg = e.args
+                                            print("Error retrieving data from the database:", code, msg)
+
+                                    # Update the list of patients after adding the examination
+                                    try:
+                                        c7 = connection.cursor()
+                                        c7.callproc('filterPatient', [d_id])
+                                        all_patients = c7.fetchall()
+                                        for row in all_patients:
+                                            print(row)
+                                    except pymysql.Error as e:
+                                        code, msg = e.args
+                                        print("Error retrieving data from the database:", code, msg)
+
 
                                 elif patient_option == "3":
                                     # Code for Option 3
-                                    pass
+                                    try:
+                                        print("All Examinations for Patient ", pt_id)
+                                        c16 = connection.cursor()
+                                        c16.callproc('allExam', [pt_id])
+                                        all_Exam = c16.fetchall()
+                                        for row in all_Exam:
+                                            print(row)
+                                    except pymysql.Error as e:
+                                        code, msg = e.args
+                                        print("Error retrieving data from the database:", code, msg)
 
+                                    while True:
+                                       try:
+                                           date = input("Choose a date where all examination that precede are archived: ")
+                                           c17 = connection.cursor()
+                                           c17.callproc('ArchiveOldExaminations', [pt_id, date])
+                                           print("Successful Archive")
+                                           break
+                                       except pymysql.Error as e:
+                                           code, msg = e.args
+                                           print("Error retrieving data from the database:", code, msg)
+
+                                elif patient_option == "0":
+                                    reprompt = "main"
+                                    break
 
                                 reprompt = ""
                                 while reprompt not in ["option", "select", "main"]:

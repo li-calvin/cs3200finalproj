@@ -99,23 +99,28 @@ CREATE TABLE  patient (
      pt_last_name  varchar(100) NOT NULL,
      check_in  DATETIME NOT NULL,
      check_out  DATETIME DEFAULT NULL ,
+     doc_id INT,
     PRIMARY KEY ( pt_id ),
     room_num INT, 
     hospital_id INT, 
-    FOREIGN KEY (room_num, hospital_id) REFERENCES room(room_num, hospital_id) ON UPDATE CASCADE ON DELETE RESTRICT
+    FOREIGN KEY (room_num, hospital_id) REFERENCES room(room_num, hospital_id) ON UPDATE CASCADE ON DELETE RESTRICT, 
+    foreign key (doc_id) REFERENCES doctor(doc_id) 
+	ON UPDATE CASCADE ON DELETE RESTRICT
+
 ); 
 -- add room here 
-INSERT INTO patient (pt_id, pt_first_name, pt_last_name, check_in, check_out, room_num, hospital_id)
+INSERT INTO patient (pt_id, pt_first_name, pt_last_name, check_in, check_out, room_num, hospital_id, doc_id)
 VALUES
-  (11, 'John', 'Doe', '2023-06-01', '2023-06-02', 100, 1),
-  (12, 'Jane', 'Smith', '2023-06-02', '2023-06-03', 102, 2),
-  (13, 'Michael', 'Johnson', '2023-06-03', '2023-06-05', 104, 3),
-  (14, 'Emily', 'Williams', '2023-06-04', '2023-06-06', 106, 4),
-  (15, 'David', 'Brown', '2023-06-05', '2023-06-07', 107, 5),
-  (16, 'Sarah', 'Taylor', '2023-06-06', '2023-06-07', 108, 6),
-  (17, 'Robert', 'Anderson', '2023-06-06', '2023-06-08', 109, 7),
-  (18, 'Jennifer', 'Clark', '2023-06-07', '2023-06-08', 110, 8),
-  (19, 'William', 'Thomas', '2023-06-08', '2023-06-08', 111, 9); 
+  (11, 'John', 'Doe', '2023-06-01', '2023-06-02', 100, 1, 901),
+  (12, 'Jane', 'Smith', '2023-06-02', '2023-06-03', 102, 2, 902),
+  (13, 'Michael', 'Johnson', '2023-06-03', '2023-06-05', 104, 3, 903),
+  (14, 'Emily', 'Williams', '2023-06-04', '2023-06-06', 106, 4, 904),
+  (15, 'David', 'Brown', '2023-06-05', '2023-06-07', 107, 5, 905),
+  (16, 'Sarah', 'Taylor', '2023-06-06', '2023-06-07', 108, 6, 906),
+  (17, 'Robert', 'Anderson', '2023-06-06', '2023-06-08', 109, 7, 907),
+  (18, 'Jennifer', 'Clark', '2023-06-07', '2023-06-08', 110, 8, 908),
+  (19, 'William', 'Thomas', '2023-06-08', '2023-06-08', 111, 9, 909); 
+
 
 /*
 DROP TABLE IF EXISTS  bill ;
@@ -164,12 +169,12 @@ INSERT INTO device_type VALUES ('Surgical'),('Life Preservation'), ('Probing'), 
   
 DROP TABLE IF EXISTS examination; 
 CREATE TABLE examination ( 
-examNo INT PRIMARY KEY, 
-symptom MEDIUMTEXT, 
+examNo INT PRIMARY KEY auto_increment, 
+symptom VARCHAR(128) DEFAULT 'No symptoms described yet', 
 pt_id INT, 
 doc_id INT, 
-device_id INT, 
-exam_date DATE, 
+device_id INT DEFAULT NULL, 
+exam_date DATETIME, 
 foreign key (pt_id) REFERENCES patient(pt_id) 
 	ON UPDATE CASCADE ON DELETE CASCADE, 
 foreign key (doc_id) REFERENCES doctor(doc_id) 
@@ -188,11 +193,30 @@ VALUES
     (1000006, 'Eye redness and irritation', 16, 906, 1003, '2009-12-05'),
     (1000007, 'Abdominal pain and bloating', 17, 907, 1007, '2002-07-21'),
     (1000008, 'Pregnancy check-up', 18, 908, 1001, '2016-05-09'),
-    (1000009, 'Urinary tract infection', 19, 909, 1007, '2011-02-14'),
-    (1000010, 'Depression and anxiety', 11, 910, 1005, '2019-10-30');
+    (1000009, 'Urinary tract infection', 19, 909, 1007, '2011-02-14'); 
 
-
-
+-- DROP TABLE IF EXISTS patient_doctor;
+-- CREATE TABLE  patient_doctor  (
+-- 	pt_id INT, 
+-- 	doc_id INT,
+--     PRIMARY KEY (pt_id, doc_id), 
+--  foreign key (pt_id) REFERENCES patient(pt_id) 
+-- 	ON UPDATE CASCADE ON DELETE CASCADE, 
+-- foreign key (doc_id) REFERENCES doctor(doc_id) 
+-- 	ON UPDATE CASCADE ON DELETE RESTRICT
+-- ); 
+-- INSERT INTO patient_doctor (pt_id, doc_id)
+-- VALUES 
+-- (11, 901), 
+-- (12, 902), 
+-- (13, 903), 
+-- (14, 904), 
+-- (15, 905), 
+-- (16, 906), 
+-- (17, 907), 
+-- (18,908), 
+-- (19, 909), 
+-- (11, 910); 
 
 
 -- Bridge Tables 
@@ -237,8 +261,7 @@ VALUES
     (1000006, 1003),
     (1000007, 1007),
     (1000008, 1001),
-    (1000009, 1007),
-    (1000010, 1005);
+    (1000009, 1007); 
 
 
 /*
@@ -288,11 +311,10 @@ VALUES
     (1007, 107, 5);
 
 
-
-
 # find all the medical device types (filter kind of ) 
 # filter by room, etc. 
 # add a medical device to the table 
 # move a medical devie from one room to another 
 # which room has the most medical devices compared to another one 
+
 

@@ -53,7 +53,7 @@ END$$
 DELIMITER ; 
 
 # creating device 
-CALL createDevice(1001, 'X-ray Machine', 120, 80, 150, 'Critical', 4, 1);
+# CALL createDevice(1001, 'X-ray Machine', 120, 80, 150, 'Critical', 4, 1);
 
 
 
@@ -140,7 +140,7 @@ BEGIN
 END$$ 
 DELIMITER ; 
 
-CALL filter_byRoom(105); 
+# CALL filter_byRoom(105); 
 
 
 DROP PROCEDURE IF EXISTS filterRoom; 
@@ -152,7 +152,7 @@ BEGIN
 END$$ 
 DELIMITER ; 
 
-CALL filterRoom(1005); 
+# CALL filterRoom(1005); 
 
 
 -- 3. Filter by Device Type (READ) 
@@ -180,7 +180,7 @@ BEGIN
 END$$ 
 DELIMITER ; 
 
-CALL filterType('Life Preservatio'); 
+# CALL filterType('Life Preservatio'); 
 
 -- consolidated list of all of the device_id from med_device_type for easy access for 
 DROP PROCEDURE IF EXISTS filterType_grouped; 
@@ -193,7 +193,7 @@ BEGIN
 END$$ 
 DELIMITER ; 
 
-CALL filterType_grouped('Life Preservation'); 
+# CALL filterType_grouped('Life Preservation'); 
 
 # unsure if group_concat is a single item so I'll just add it 
 DROP FUNCTION IF EXISTS filterType_grouped2; 
@@ -210,7 +210,7 @@ delimiter $$
 		END$$
 DELIMITER ; 
 
-SELECT filterType_grouped2('Life Preservation'); 
+# SELECT filterType_grouped2('Life Preservation'); 
 
 -- Is doctor 
 DROP PROCEDURE IF EXISTS isDoctor; 
@@ -230,7 +230,7 @@ BEGIN
 END$$ 
 DELIMITER ; 
 
-CALL isDoctor(900, 'John','Doe'); 
+# CALL isDoctor(900, 'John','Doe'); 
  
 -- your hospital 
 DROP PROCEDURE IF EXISTS yourHospital; 
@@ -244,7 +244,7 @@ BEGIN
 END$$ 
 DELIMITER ; 
 
-CALL yourHospital(901); 
+# CALL yourHospital(901); 
 
 
 -- FInd doctor information 
@@ -268,7 +268,7 @@ BEGIN
 END$$ 
 DELIMITER ; 
 
-CALL doctorInfo(901, 'John','Doe'); 
+# CALL doctorInfo(901, 'John','Doe'); 
 
 
 
@@ -288,7 +288,7 @@ BEGIN
 END$$ 
 DELIMITER ; 
 
-CALL filterDoctor(901); 
+# CALL filterDoctor(901); 
 
 
 -- not med devices but partients 
@@ -298,10 +298,8 @@ DROP PROCEDURE IF EXISTS filterPatient;
 DELIMITER $$ 
 CREATE PROCEDURE filterPatient(IN doctor_id_p INT)
 BEGIN 
-	SELECT p.* FROM patient as p INNER JOIN 
-	examination USING(pt_id)
-    WHERE doc_id = doctor_id_p
-	GROUP BY pt_id; 
+	SELECT p.* FROM patient as p 
+    WHERE doc_id = doctor_id_p; 
 END$$ 
 DELIMITER ; 
 
@@ -315,26 +313,77 @@ CALL filterPatient(901);
 -- 5. Move a medical device from one room to another (UPDATE) 
 -- They choose the medical device and assign it to a different room
 
+-- DROP PROCEDURE IF EXISTS availableRooms;
+
+-- DELIMITER $$
+
+-- CREATE PROCEDURE availableRooms (IN d_id_p INT)
+-- BEGIN
+--     DECLARE hosp_id INT;
+
+--     SELECT hospital_id INTO hosp_id
+--     FROM doctor
+--     WHERE doc_id = d_id_p;
+
+--     SELECT r.*
+--     FROM room AS r
+--     WHERE r.room_num NOT IN (
+--         SELECT room_num
+--         FROM patient
+--         WHERE hospital_id = hosp_id
+--     )
+--     AND r.hospital_id = hosp_id;
+-- END$$
+
+-- DELIMITER ;
+
+-- CREATE PROCEDURE availableMove (IN d_id_p INT)
+-- BEGIN
+-- SELECT * FROM room
+-- WHERE room_num != old_room_p and hospital_id != old_hosp_p;
+
+
 DROP PROCEDURE IF EXISTS moveDevice; 
 DELIMITER $$ 
-CREATE PROCEDURE moveDevice(IN device_id_p INT, IN old_room_p INT, new_room_p INT)
+CREATE PROCEDURE moveDevice(IN device_id_p INT, IN old_room_p INT, IN old_hosp_p INT, IN new_room_p INT, IN new_hosp_p INT)
 BEGIN 
 	DECLARE room_tmp INT; 
-    DECLARE count_dev INT; 
+    DECLARE count_dev INT; -- if old device and place exists 
+    DECLARE count_dev2 INT; -- if new place exists 
     
     
+    IF old_room_p = new_room_p AND old_hosp_p = new_hosp_p THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Old room and old hospital cannot be the same as new room and new hospital.';
+    END IF;
+    
+    SELECT COUNT(*) INTO count_dev2
+    FROM room
+    WHERE room_num = new_room_p and hospital_id = new_hosp_p; 
+    
+    -- old device exists 
     SELECT COUNT(*) INTO count_dev
 	FROM room_med_device
-	WHERE device_id= device_id_p and room_num = old_room_p; 
+	WHERE device_id = device_id_p and room_num = old_room_p and hospital_id = old_hosp_p; 
+    
+    
 
-    IF count_dev > 0 THEN 
-		UPDATE room_med_device SET room_num = new_room_p
-        WHERE device_id= device_id_p and room_num = old_room_p;
+    IF count_dev > 0 and count_dev2 > 0 THEN  -- device exists 
+		UPDATE room_med_device 
+        SET room_num = new_room_p, hospital_id = new_hosp_p 
+        WHERE device_id= device_id_p and room_num = old_room_p and hospital_id = old_hosp_p;
+    ELSEIF count_dev2 = 0 THEN 
+		SIGNAL SQLSTATE '45000'
+		SET MESSAGE_TEXT = 'Invalid New room/Hosp';
+    
+	ELSEIF count_dev = 0 THEN 
+		SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Device does not exists or device does not fall within the old room/old hosp';
 	END IF; 
 END$$ 
 DELIMITER ; 
 
-CALL moveDevice(1001, 101, 102); 
+CALL moveDevice(1001, 101, 1, 101, 3); 
 
 
 
@@ -384,41 +433,62 @@ delimiter $$
 		END$$
 DELIMITER ; 
 
-CALL mostQuantity2();  
+# CALL mostQuantity2();  
 
 
 -- Patient examinations all of em 
 DROP PROCEDURE IF EXISTS allExam; 
 DELIMITER $$ 
-CREATE PROCEDURE allExam(IN pt_first_name_p VARCHAR(100), IN pt_last_name_p VARCHAR(100))
+CREATE PROCEDURE allExam(IN pt_id_p INT)
 BEGIN 
-	DECLARE pt_id_temp INT;
-
-	SELECT pt_id INTO pt_id_temp FROM patient WHERE 
-          pt_first_name = pt_first_name_p and pt_last_name = pt_last_name_p;
-	
     SELECT e.* FROM examination as e 
-    WHERE pt_id = pt_id_temp; 
+    WHERE pt_id = pt_id_p; 
 END$$ 
 DELIMITER ; 
 
-CALL allExam('John', 'Doe'); 
+CALL allExam(24); 
 
 -- 10. Deletion of examination 
 DROP PROCEDURE IF EXISTS ArchiveOldExaminations; 
 DELIMITER $$ 
-CREATE PROCEDURE ArchiveOldExaminations(IN old_date_p DATE) 
+CREATE PROCEDURE ArchiveOldExaminations(IN pt_id_p INT, IN old_date_p DATE) 
 BEGIN 
-    CREATE TABLE archived_examination AS 
-	(SELECT * FROM examination
-	WHERE exam_date < old_date_p); 
+	DECLARE has_old_exams INT;
 
-	DELETE FROM examination
-    WHERE exam_date < old_date_p;
+    -- Check if there are any examinations with dates less than old_date_p for the specified pt_id_p
+    SELECT COUNT(*) INTO has_old_exams
+    FROM examination
+    WHERE exam_date < old_date_p AND pt_id = pt_id_p;
+ 
+
+	IF has_old_exams > 0 THEN
+			CREATE TABLE IF NOT EXISTS archived_examination (
+            -- Define the columns of the table here
+            examNo INT,
+            symptom VARCHAR(128),
+            pt_id INT,
+            doc_id INT,
+            device_id INT,
+            exam_date DATE
+        );
+
+        -- Insert the old examinations into the archived_examination table
+        INSERT INTO archived_examination (examNo, symptom, pt_id, doc_id, device_id, exam_date)
+        SELECT examNo, symptom, pt_id, doc_id, device_id, exam_date
+        FROM examination
+        WHERE exam_date < old_date_p AND pt_id = pt_id_p;
+
+        -- Delete the old examinations from the examination table
+        DELETE FROM examination
+        WHERE exam_date < old_date_p AND pt_id = pt_id_p;
+	ELSE 
+		SIGNAL SQLSTATE '45000'
+		SET MESSAGE_TEXT = 'There are no examinations before this date';
+	END IF;
 END$$ 
 DELIMITER ; 
 
-CALL ArchiveOldExaminations('2003-01-01');
+CALL ArchiveOldExaminations(24, '2023-09-01');
 
 
 
@@ -505,7 +575,39 @@ CREATE TRIGGER exam_after_delete
         END$$ 
 DELIMITER ; 
 
-CALL DeleteOldExaminations('2005-01-01');
+# CALL DeleteOldExaminations('2005-01-01');
+
+
+-- check to see all rooms that are available at that designated hospital based on the doctor 
+
+DROP PROCEDURE IF EXISTS availableRooms;
+
+DELIMITER $$
+
+CREATE PROCEDURE availableRooms (IN d_id_p INT)
+BEGIN
+    DECLARE hosp_id INT;
+
+    SELECT hospital_id INTO hosp_id
+    FROM doctor
+    WHERE doc_id = d_id_p;
+
+    SELECT r.*
+    FROM room AS r
+    WHERE r.room_num NOT IN (
+        SELECT room_num
+        FROM patient
+        WHERE hospital_id = hosp_id
+    )
+    AND r.hospital_id = hosp_id;
+END$$
+
+DELIMITER ;
+
+# CALL availableRooms(901); 
+
+
+
 
 -- 10. Add patient (don't want to delete) 
 -- default for the checkout time is null 
@@ -514,15 +616,20 @@ DELIMITER $$
 CREATE PROCEDURE createPatient(IN pt_first_name_p VARCHAR(100) , 
 								IN pt_last_name_p VARCHAR(100), 
                                 IN pt_check_in_p DATETIME, 
+                                IN room_num_p INT, 
                                 IN d_id_p INT) 
 -- if this exists pt_id exists 
 -- return an error 
+
 
 
 BEGIN 
 DECLARE pt_id_temp INT; 
 DECLARE count_pt INT; 
 DECLARE hosp_id int;
+DECLARE count_room int; 
+
+
 
 SELECT pt_id INTO pt_id_temp 
 FROM patient 
@@ -530,7 +637,7 @@ WHERE pt_first_name = pt_first_name_p and pt_last_name = pt_last_name_p;
 
 SELECT COUNT(*) INTO count_pt
 FROM patient 
-WHERE pt_id = pt_id_temp; 
+WHERE pt_id = pt_id_temp and room_num = room_num_p; 
 
 IF count_pt > 0 THEN 
 SIGNAL SQLSTATE '45000'
@@ -541,35 +648,79 @@ SELECT hospital_id into hosp_id
 FROM doctor 
 WHERE doc_id = d_id_p; 
 
+SELECT COUNT(*) into count_room 
+FROM patient 
+WHERE room_num = room_num_p and hospital_id = hosp_id; 
+
+IF count_room > 0 THEN -- this table is already assigned to a patient in that hospital 
+SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Room already assigned to different patient';
+END IF; 
          
-INSERT INTO patient(pt_first_name, pt_last_name, check_in, hospital_id) VALUES
-(pt_first_name_p, pt_last_name_p, pt_check_in_p, hosp_id); 
+INSERT INTO patient(pt_first_name, pt_last_name, check_in, doc_id, room_num, hospital_id) VALUES
+(pt_first_name_p, pt_last_name_p, pt_check_in_p, d_id_p, room_num_p, hosp_id); 
 end$$
 DELIMITER ;
 
-CALL createPatient("Ace", "Ventura", '2023-06-15 14:30:00', 'New Hospital'); 
+CALL createPatient("Ac", "Ventura", '2023-06-15 14:30:00', 101, 901); 
+
+
 
 -- 11. procedure where you're able to to add the time (check out procedure) 
+
 DROP PROCEDURE IF EXISTS enterCheckOut; 
 DELIMITER $$ 
 CREATE PROCEDURE enterCheckOut(IN pt_id_p INT, IN check_out_p DATETIME)
 BEGIN 
     DECLARE count_pt INT; 
-    
+    DECLARE checkout_time DATETIME;
     
     SELECT COUNT(*) INTO count_pt
-	FROM patient
-	WHERE pt_id_p = pt_id; 
+    FROM patient
+    WHERE pt_id = pt_id_p; 
     
     IF count_pt > 0 THEN 
-		UPDATE 
-        patient SET check_out = check_out_p
+        SELECT check_out INTO checkout_time
+        FROM patient
         WHERE pt_id = pt_id_p; 
-	END IF; 
+        
+        IF checkout_time IS NULL THEN
+            UPDATE patient
+            SET check_out = check_out_p
+            WHERE pt_id = pt_id_p;
+        ELSE
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Check-out time already exists for the patient.';
+        END IF;
+	ELSE 
+		SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'patient does not exist.';
+    END IF; 
 END$$  
-DELIMITER ; 
+DELIMITER ;
 
-CALL enterCheckOut(20,  '2023-06-20 14:30:00');
+CALL enterCheckOut(19,  '2023-06-20 14:30:00');
+
+-- DROP PROCEDURE IF EXISTS enterCheckOut; 
+-- DELIMITER $$ 
+-- CREATE PROCEDURE enterCheckOut(IN pt_id_p INT, IN check_out_p DATETIME)
+-- BEGIN 
+--     DECLARE count_pt INT; 
+--     
+--     -- checks to see if that patient exists 
+--     SELECT COUNT(*) INTO count_pt
+-- 	FROM patient
+-- 	WHERE pt_id_p = pt_id; 
+--     
+--     IF count_pt > 0 THEN 
+-- 		UPDATE 
+--         patient SET check_out = check_out_p
+--         WHERE pt_id = pt_id_p; 
+-- 	END IF; 
+-- END$$  
+-- DELIMITER ; 
+
+# CALL enterCheckOut(20,  '2023-06-20 14:30:00');
 
 -- 12. Trigger that asks for more information on that hospital 
 
@@ -595,7 +746,7 @@ BEGIN
 END //
 DELIMITER ;
 
-CALL removePatient(20); 
+# CALL removePatient(20); 
 
 
 
@@ -609,7 +760,7 @@ BEGIN
 END$$ 
 DELIMITER ; 
 
-CALL filterHospital(13); 
+# CALL filterHospital(13); 
 
 -- Proc
 DROP PROCEDURE IF EXISTS addRoom; 
@@ -632,7 +783,7 @@ BEGIN
 END$$ 
 DELIMITER ; 
 
-CALL addRoom(107,1); 
+# CALL addRoom(107,1); 
 
 
 
@@ -657,7 +808,7 @@ BEGIN
 END$$ 
 DELIMITER ; 
 
-CALL removeRoom(107,1); 
+# CALL removeRoom(107,1); 
 
 
 -- Proc
@@ -681,7 +832,7 @@ END //
 
 DELIMITER ;
 
-CALL removeHospital(12); 
+# CALL removeHospital(12); 
 
 -- Proc
 DROP PROCEDURE IF EXISTS addHosp; 
@@ -704,31 +855,50 @@ DECLARE count_hosp INT;
 END //
 DELIMITER ;
 
-CALL addHosp(12, 'New Hospital', '1112', 'street', 'town', 'ma', '11355'); 
+# CALL addHosp(12, 'New Hospital', '1112', 'street', 'town', 'ma', '11355'); 
 
 
 -- Proc
 DROP PROCEDURE IF EXISTS addExam; 
 DELIMITER //
-CREATE PROCEDURE addExam(IN examNo_p INT, symp MEDIUMTEXT, patientID INT, docID INT, deviceID INT, IN exam_date_p DATE)
+CREATE PROCEDURE addExam(symp VARCHAR(128), patientID INT, deviceID INT, IN exam_date_p DATE)
 BEGIN
-	DECLARE count_exam INT; 
--- need to check on the existence of the room 
-	SELECT COUNT(*) INTO count_exam
-	FROM examination
-	WHERE examNo = examNo_p;  
-
-	IF  count_exam = 0 THEN -- NO room in tabel 
-		INSERT INTO examination(examNo, symptom, pt_id, doc_id, device_id, exam_date)
-		VALUES (examNo_p, symp, patientID, docID, deviceID, exam_date_p);
-	ELSEIF count_exam > 0 THEN 
+	DECLARE checkInDate DATETIME;
+    DECLARE checkOutDate DATETIME;
+    DECLARE patientDoctorID INT;
+    DECLARE count_device INT; 
+    
+    SELECT COUNT(*) into count_device
+    FROM med_device
+    WHERE device_id = deviceID; 
+    
+    IF count_device = 0 THEN 
 		SIGNAL SQLSTATE '45000'
-		SET MESSAGE_TEXT = 'Examination already exists';
+        SET MESSAGE_TEXT = 'Invalid medical device entered';
 	END IF; 
+    
+    -- Get check-in and check-out dates for the patient
+    SELECT check_in, check_out, doc_id INTO checkInDate, checkOutDate, patientDoctorID
+    FROM patient
+    WHERE pt_id = patientID;
+    
+    IF (exam_date_p >= checkInDate AND exam_date_p <= checkOutDate) OR (exam_date_p >= checkInDate ) THEN
+        -- Check if the doctor matches the patient's assigned doctor
+            -- Insert examination record
+		INSERT INTO examination(symptom, pt_id, doc_id, device_id, exam_date)
+		VALUES (symp, patientID, patientDoctorID, deviceID, exam_date_p);
+    ELSE
+        -- Signal an error if exam_date_p is not within the patient's check-in and check-out dates
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Invalid exam date. Please make sure the exam date is within the patient\'s check-in and check-out dates.';
+    END IF;
+
 END //
 
 DELIMITER ;
 
-CALL addExam(1000011, 'symptom', 11, 910, 1006, '2019-06-07'); 
+CALL addExam('symptom', 11, 1008, '2023-06-01 00:00:00'); 
+
+
 
 
