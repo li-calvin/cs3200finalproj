@@ -700,14 +700,14 @@ def work(name):
                                 if patient_option == "1":
                                     try:
                                         c21 = connection.cursor()
-                                        c21.callproc('initialize_num_exam')
+                                        c21.callproc('callProcedureMultipleTimes')
                                     except pymysql.Error as e:
                                         code, msg = e.args
                                         print("Error retrieving data from the database:", code, msg)
 
                                     try:
                                         c22 = connection.cursor()
-                                        print("Number of Exams for all Patients")
+                                        print("\nNumber of Exams for all Patients")
                                         query = 'SELECT pt_id, numExams from patient';
                                         c22.execute(query)
                                         all_NumExam = c22.fetchall()
@@ -792,7 +792,7 @@ def work(name):
                                 # Code for Option 3: Archive option
                                 elif patient_option == "3":
                                     try:
-                                        print("-- All Examinations for Patient", pt_id, "--")
+                                        print("\n-- All Examinations for Patient", pt_id, "--")
                                         c16 = connection.cursor()
                                         c16.callproc('allExam', [pt_id])
                                         all_Exam = c16.fetchall()
@@ -849,28 +849,27 @@ def work(name):
                     while True:
                         print("\nUpdate Check Out")
                         patient = input("Select your patient id that you want to insert check out time for: ")
-                        match_found3 = False
+                        # match_found3 = False
+                        # for row in all_patients:
+                        #     if patient.isdigit() and int(patient) == row['pt_id']:
+                        #         match_found3 = True
+                        #         break
+                        #     else:
+                        #         print("Invalid option. Not your patient")
 
-                        for row in all_patients:
-                            if patient.isdigit() and int(patient) == row['pt_id']:
-                                match_found3 = True
-                                break
-                            else:
-                                print("Invalid option. Not your patient")
-
-                        if match_found3:
-                            try:
-                                check_out = input("Select Check Out Time (e.g. 2023-06-20 14:30:00): ")
-                                c14 = connection.cursor()
-                                c14.callproc(
-                                    'enterCheckout', [
-                                        patient, check_out])
-                                print("Update CheckOut Time Successful")
-                                break
-                            except pymysql.Error as e:
-                                code, msg = e.args
-                                print("Error retrieving data from the database:", code, msg)
-                                break
+                        # if match_found3:
+                        try:
+                            check_out = input("Select Check Out Time (e.g. 2023-06-20 14:30:00): ")
+                            c14 = connection.cursor()
+                            c14.callproc(
+                                'enterCheckout', [
+                                    patient, check_out])
+                            print("Update CheckOut Time Successful")
+                            break
+                        except pymysql.Error as e:
+                            code, msg = e.args
+                            print("Error retrieving data from the database:", code, msg)
+                            break
 
                 # Go back to the suboptions menu
                 elif sub_option == "0":
