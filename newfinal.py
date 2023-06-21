@@ -308,205 +308,212 @@ def work(name):
                             print("Maximum incorrect attempts reached. Returning to the main menu.")
                             break
             if authenticated:
-                # User is already authenticated, perform administrative tasks
-                print("\n-------- Administration Tasks --------")
-                # Add your code for the administrative tasks here
-                # Add your code for the administrative tasks here
-                print("\nPlease select an option:")
-                print("1. Add Room")
-                print("2. Remove Room")
-                print("3. Add Hospital")
-                print("4. Remove Hospital")
-                print("5. Add Medical Device Entry")
-                print("6. Edit Medical Device Entry")
-                print("7. Remove Medical Device")
-                print("8. View All Rooms")
-                print("9. View All Hospitals")
-                print("10. View All Medical Devices")
-                print("0. Exit")
-                option_choice = input("Enter your choice (0-10): ")
+                admin_menu = True
+                while admin_menu:
+                    # User is already authenticated, perform administrative tasks
+                    print("\n-------- Administration Tasks --------")
+                    # Add your code for the administrative tasks here
+                    # Add your code for the administrative tasks here
+                    print("Please select an option:")
+                    print("1. Add Room")
+                    print("2. Remove Room")
+                    print("3. Add Hospital")
+                    print("4. Remove Hospital")
+                    print("5. Add Medical Device Entry")
+                    print("6. Edit Medical Device Entry")
+                    print("7. Remove Medical Device")
+                    print("8. View All Rooms")
+                    print("9. View All Hospitals")
+                    print("10. View All Medical Devices")
+                    print("0. Exit")
+                    option_choice = input("Enter your choice (0-10): ")
 
-                if option_choice == "1":
-                    try:
-                        con = connection.cursor()
+                    if option_choice == "1":
+                        try:
+                            print("\nAdd Room")
+                            con = connection.cursor()
 
-                        room_num = input ("Please enter the room number you want to add: ")
-                        hosp_id = input ("Please enter the corresponding hospital id: ")
-                        
-                        con.callproc("addRoom", (room_num, hosp_id))
-                        print("Room successfully added ")
-                    
-                        con.close()
-                    except pymysql.Error as e:
-                        code, msg = e.args
-                        print("Error retrieving data from the database:", code, msg)
+                            room_num = input ("Please enter the room number you want to add: ")
+                            hosp_id = input ("Please enter the corresponding hospital id: ")
 
+                            con.callproc("addRoom", (room_num, hosp_id))
+                            print("Room successfully added ")
 
-                elif option_choice == "2":    
-                    try:
-                        con2 = connection.cursor()
-                    
-                        room_num = input ("Please enter the room number you want to delete: ")
-                        hosp_id = input ("Please enter the corresponding hospital id: ")
-
-                        con2.callproc("removeRoom", (room_num, hosp_id))
-                        print("Room successfully removed")
-
-                        con2.close()
-                    except pymysql.Error as e:
-                        code, msg = e.args
-                        print("Error retrieving data from the database:", code, msg)
-
-                elif option_choice == "3":
-                    try:
-                        con3 = connection.cursor()
-
-                        hosp_name = input ("Please enter the new hospital's name: ")
-                        hosp_streetnum = input("Please enter the new hospital's street number: ")
-                        hosp_streetname = input("Please enter the new hospital's street name: ")
-                        hosp_town = input("Please enter the new hospital's town: ")
-                        hosp_state = input ("Please enter the new hospital's state: ")
-                        hosp_zipcode = input ("Please enter the new hospital's zipcode: ")
-
-                        con3.callproc("addHosp", (hosp_name, hosp_streetnum, hosp_streetname, hosp_town, hosp_state, hosp_zipcode))
-                        print("Hospital successfully added ")
-                        con3.close()
-                    except pymysql.Error as e:
-                        code, msg = e.args
-                        print("Error retrieving data from the database:", code, msg)
-
-                elif option_choice == "4":
-                    try:
-                        con4 = connection.cursor()
-
-                        hosp_id1 = input ("Please enter the hospital id that you wish to delete: ")
-
-                        con4.callproc("removeHospital", hosp_id1)
-
-                        con4.close()
-
-                    except pymysql.Error as e:
-                        code, msg = e.args
-                        print("Error retrieving data from the database:", code, msg)
+                            con.close()
+                        except pymysql.Error as e:
+                            code, msg = e.args
+                            print("Error retrieving data from the database:", code, msg)
 
 
-                elif option_choice == "5":
-                    try:
-                        con5 = connection.cursor()
+                    elif option_choice == "2":
+                        try:
+                            print("\nDelete Room")
+                            con2 = connection.cursor()
 
-                        did = input ("Please enter the new device id: ")
-                        dname = input ("Please enter the new device name: ")
-                        l = input ("Please enter the new device length: ")
-                        w = input ("Please enter the new device width: ")
-                        h = input ("Please enter the new device height: ")
-                        li = input ("Please enter the new device's life involvement: ")
-                        quant = input ("Please enter the quantity of the new device: ")
-                        hospid = input ("Please enter the id of the hospital the new device is at: ")
+                            room_num = input ("Please enter the room number you want to delete: ")
+                            hosp_id = input ("Please enter the corresponding hospital id: ")
 
-                        con5.callproc("createDevice", (did, dname, l, w, h, li, quant, hospid))
+                            con2.callproc("removeRoom", (room_num, hosp_id))
+                            print("Room successfully removed")
 
-                        con5.close()
-                    except pymysql.Error as e:
-                        code, msg = e.args
-                        print("Error retrieving data from the database:", code, msg)
+                            con2.close()
+                        except pymysql.Error as e:
+                            code, msg = e.args
+                            print("Error retrieving data from the database:", code, msg)
 
-                elif option_choice == "6":
-                    try:
-                        con6 = connection.cursor()
+                    elif option_choice == "3":
+                        try:
+                            print("\nAdd Hospital")
+                            con3 = connection.cursor()
 
-                        updated_did = input ("Please enter the updated device id: ")
-                        updated_dname = input ("Please enter the updated device name: ")
-                        updated_l = input ("Please enter the updated device length: ")
-                        updated_w = input ("Please enter the updated device width: ")
-                        updated_h = input ("Please enter the updated device height: ")
-                        updated_li = input ("Please enter the updated device's life involvment: ")
-                        updated_quant = input ("Please enter the quantity of the updated device: ")
-                        updated_hospid = input ("Please enter the id of the hospital the updated device is at: ")
+                            hosp_name = input ("Please enter the new hospital's name: ")
+                            hosp_streetnum = input("Please enter the new hospital's street number: ")
+                            hosp_streetname = input("Please enter the new hospital's street name: ")
+                            hosp_town = input("Please enter the new hospital's town: ")
+                            hosp_state = input ("Please enter the new hospital's state: ")
+                            hosp_zipcode = input ("Please enter the new hospital's zipcode: ")
 
-                        con6.callproc("updateDevice", (updated_did, updated_dname, updated_l, updated_w, updated_h, updated_li, updated_quant, updated_hospid))
+                            con3.callproc("addHosp", (hosp_name, hosp_streetnum, hosp_streetname, hosp_town, hosp_state, hosp_zipcode))
+                            print("Hospital successfully added ")
+                            con3.close()
+                        except pymysql.Error as e:
+                            code, msg = e.args
+                            print("Error retrieving data from the database:", code, msg)
 
-                        con6.close()
-                    except pymysql.Error as e:
-                        code, msg = e.args
-                        print("Error retrieving data from the database:", code, msg)
+                    elif option_choice == "4":
+                        try:
+                            print("\nRemove Hospital")
+                            con4 = connection.cursor()
+                            hosp_id1 = input ("Please enter the hospital id that you wish to delete: ")
+                            con4.callproc("removeHospital", (hosp_id1,))
+                            print("Hospital successfully removed ")
+                            con4.close()
+                        except pymysql.Error as e:
+                            code, msg = e.args
+                            print("Error retrieving data from the database:", code, msg)
 
-                elif option_choice == "7":
-                    try:
-                        con7 = connection.cursor()
 
-                        device_id = input ("Please enter the device id of which you want to delete: ")
+                    elif option_choice == "5":
+                        try:
+                            print("\nAdd Device")
+                            con5 = connection.cursor()
+                            did = input ("Please enter the new device id: ")
+                            dname = input ("Please enter the new device name: ")
+                            l = input ("Please enter the new device length: ")
+                            w = input ("Please enter the new device width: ")
+                            h = input ("Please enter the new device height: ")
+                            li = input ("Please enter the new device's life involvement: ")
+                            quant = input ("Please enter the quantity of the new device: ")
+                            hospid = input ("Please enter the id of the hospital the new device is at: ")
 
-                        con7.callproc("deleteDevice", (device_id))
+                            con5.callproc("createDevice", (did, dname, l, w, h, li, quant, hospid))
+                            print("Device successfully added ")
+                            con5.close()
+                        except pymysql.Error as e:
+                            code, msg = e.args
+                            print("Error retrieving data from the database:", code, msg)
 
-                        con7.close()
-                    except pymysql.Error as e:
-                        code, msg = e.args
-                        print("Error retrieving data from the database:", code, msg)
-               
-                
-                # Option to view all rooms
-                elif option_choice == "8":
-                    try:
-                        con8 = connection.cursor()
-                    
-                        query1 = "SELECT * FROM room"
-                    
-                        con8.execute(query1)
-                    
-                        for row in con8.fetchall():
-                            print(row)
-                        con8.close()
-                    except pymysql.Error as e:
-                        code, msg = e.args
-                        print("Error retrieving data from the database:", code, msg)
-                
-                # Option to view all hospitals
-                elif option_choice == "9":
-                    try:
-                        con9 = connection.cursor()
-                    
-                        query2 = "SELECT * FROM hospital"
-                    
-                        con9.execute(query2)
-                    
-                        for row in con9.fetchall():
-                            print(row)
-                        con9.close()
-                    except pymysql.Error as e:
-                        code, msg = e.args
-                        print("Error retrieving data from the database:", code, msg)
-                
-                elif option_choice == "10":
-                    try:
-                        con10 = connection.cursor()
-                    
-                        query3 = "SELECT * FROM med_device"
-                    
-                        con10.execute(query3)
-                    
-                        for row in con10.fetchall():
-                            print(row)
-                        con10.close()
-                    except pymysql.Error as e:
-                        code, msg = e.args
-                        print("Error retrieving data from the database:", code, msg)
-                
-                # Exit this menu
-                elif option_choice == "0":
-                    break
+                    elif option_choice == "6":
+                        try:
+                            print("\nUpdate Device")
+                            con6 = connection.cursor()
 
-                # After performing administrative tasks, give the option to go back to the main menu or exit
-                while True:
-                    print("\nDo you want to return to main menu or exit")
-                    admin_option = input(
-                        "Please select a valid option (menu/exit):  ").lower().strip()
-                    if admin_option == "menu":
+                            updated_did = input ("Please enter the updated device id: ")
+                            updated_dname = input ("Please enter the updated device name: ")
+                            updated_l = input ("Please enter the updated device length: ")
+                            updated_w = input ("Please enter the updated device width: ")
+                            updated_h = input ("Please enter the updated device height: ")
+                            updated_li = input ("Please enter the updated device's life involvment: ")
+                            updated_quant = input ("Please enter the quantity of the updated device: ")
+                            updated_hospid = input ("Please enter the id of the hospital the updated device is at: ")
+
+                            con6.callproc("updateDevice", (updated_did, updated_dname, updated_l, updated_w, updated_h, updated_li, updated_quant, updated_hospid))
+                            print("Hospital successfully updated")
+                            con6.close()
+                        except pymysql.Error as e:
+                            code, msg = e.args
+                            print("Error retrieving data from the database:", code, msg)
+
+                    elif option_choice == "7":
+                        try:
+                            print("\nDelete Device")
+                            con7 = connection.cursor()
+
+                            device_id1 = input ("Please enter the device id of which you want to delete: ")
+
+                            con7.callproc("deleteDevice", (device_id1,))
+                            print("Device successfully deleted")
+
+                            con7.close()
+                        except pymysql.Error as e:
+                            code, msg = e.args
+                            print("Error retrieving data from the database:", code, msg)
+
+
+                    # Option to view all rooms
+                    elif option_choice == "8":
+                        try:
+                            print("\n-- All Rooms --")
+                            con8 = connection.cursor()
+                            query1 = "SELECT * FROM room"
+
+                            con8.execute(query1)
+
+                            for row in con8.fetchall():
+                                print(row)
+                            con8.close()
+                        except pymysql.Error as e:
+                            code, msg = e.args
+                            print("Error retrieving data from the database:", code, msg)
+
+                    # Option to view all hospitals
+                    elif option_choice == "9":
+                        try:
+                            print("\n-- All Hospitals --")
+                            con9 = connection.cursor()
+                            query2 = "SELECT * FROM hospital"
+                            con9.execute(query2)
+
+                            for row in con9.fetchall():
+                                print(row)
+                            con9.close()
+                        except pymysql.Error as e:
+                            code, msg = e.args
+                            print("Error retrieving data from the database:", code, msg)
+
+                    elif option_choice == "10":
+                        try:
+                            print("\n-- All Medical Devices --")
+                            con10 = connection.cursor()
+                            query3 = "SELECT * FROM med_device"
+                            con10.execute(query3)
+
+                            for row in con10.fetchall():
+                                print(row)
+                            con10.close()
+                        except pymysql.Error as e:
+                            code, msg = e.args
+                            print("Error retrieving data from the database:", code, msg)
+
+                    # Exit this menu
+                    elif option_choice == "0":
                         break
-                    elif admin_option == "exit":
-                        print("Exiting the code...")
-                        exit()
-                    else:
-                        print("Invalid option. Please choose again.")
+
+                    # After performing administrative tasks, give the option to go back to the main menu or exit
+                    while True:
+                        print("\nDo you want to return to admin tasks, main menu or exit")
+                        admin_option = input(
+                            "Please select a valid option (admin/menu/exit):  ").lower().strip()
+                        if admin_option == "admin":
+                            break
+                        if admin_option == "menu":
+                            admin_menu = False
+                            break
+                        elif admin_option == "exit":
+                            print("Exiting the code...")
+                            exit()
+                        else:
+                            print("Invalid option. Please choose again.")
 
         # Option 4: View Your Patients and associated code
         elif option == "4":
@@ -722,11 +729,6 @@ def work(name):
                                         msg = e.args[1]
                                         code = e.args[0]
                                         print("Error retrieving data from the db", code, msg)
-
-
-
-
-
 
 
 
