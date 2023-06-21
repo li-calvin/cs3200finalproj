@@ -317,10 +317,166 @@ def work(name):
                 print("2. Remove Room")
                 print("3. Add Hospital")
                 print("4. Remove Hospital")
+                print("5. Add Medical Device Entry")
+                print("6. Edit Medical Device Entry")
+                print("7. Remove Medical Device")
+                print("8. View All Rooms")
+                print("9. View All Hospitals")
+                print("10. View All Medical Devices")
                 print("0. Exit")
-                option_choice = input("Enter your choice (0-4): ")
+                option_choice = input("Enter your choice (0-10): ")
 
-                pass
+                if option_choice == "1":
+                    try:
+                        con = connection.cursor()
+                    
+                        room_num = input ("Please enter the room number you want to add: ")
+                        hosp_id = input ("Please enter the corresponding hospital id: ")
+                        
+                        con.callproc("addRoom", (room_num, hosp_id))
+                    
+                        con.close()
+                    except:
+                        print('Error: %d: %s' % (e.args[0], e.args[1]))
+                elif option_choice == "2":    
+                    try:
+                        con2 = connection.cursor()
+                    
+                        room_num = input ("Please enter the room number you want to add: ")
+                        hosp_id = input ("Please enter the corresponding hospital id: ")
+
+                        con2.callproc("removeRoom", (room_num, hosp_id))
+
+                        con2.close()
+                    except:
+                        print('Error: %d: %s' % (e.args[0], e.args[1]))
+
+                elif option_choice == "3":
+                    try:
+                        con3 = connection.cursor()
+
+                        hosp_id = input ("Please enter the new hospital's id: ")
+                        hosp_name = input ("Please enter the new hospital's name: ")
+                        hosp_state = input ("Please enter the new hospital's state: ")
+                        hosp_zipcode = input ("Please enter the new hospital's zipcode: ")
+
+                        con3.callproc("addHosp", (hosp_id, hosp_name, hosp_streetnum, hosp_streetname, hosp_town, hosp_state, hosp_zipcode))
+
+                        con3.close()
+                    except:
+                        print('Error: %d: %s' % (e.args[0], e.args[1]))
+
+                elif option_choice == "4":
+                    try:
+                        con4 = connection.cursor()
+
+                        hosp_id = input ("Please enter the hospital id that you wish to delete: ")
+
+                        con4.callproc("removeHospital", (hosp_id))
+
+                        con4.close()
+                    except:
+                        print('Error: %d: %s' % (e.args[0], e.args[1])) 
+
+
+                elif option_choice == "5":
+                    try:
+                        con5 = connection.cursor()
+
+                        did = input ("Please enter the new device id: ")
+                        dname = input ("Please enter the new device name: ")
+                        l = input ("Please enter the new device length: ")
+                        w = input ("Please enter the new device width: ")
+                        h = input ("Please enter the new device height: ")
+                        li = input ("Please enter the new device's life involvement: ")
+                        quant = input ("Please enter the quantity of the new device: ")
+                        hospid = input ("Please enter the id of the hospital the new device is at: ")
+
+                        con5.callproc("createDevice", (did, dname, l, w, h, li, quant, hospid))
+
+                        con5.close()
+                    except:
+                        print('Error: %d: %s' % (e.args[0], e.args[1]))
+
+                elif option_choice == "6":
+                    try:
+                        con6 = connection.cursor()
+
+                        updated_did = input ("Please enter the updated device id: ")
+                        updated_dname = input ("Please enter the updated device name: ")
+                        updated_l = input ("Please enter the updated device length: ")
+                        updated_w = input ("Please enter the updated device width: ")
+                        updated_h = input ("Please enter the updated device height: ")
+                        updated_li = input ("Please enter the updated device's life involvment: ")
+                        updated_quant = input ("Please enter the quantity of the updated device: ")
+                        updated_hospid = input ("Please enter the id of the hospital the updated device is at: ")
+
+                        con6.callproc("updateDevice", (updated_did, updated_dname, updated_l, updated_w, updated_h, updated_li, updated_quant, updated_hospid))
+
+                        con6.close()
+                    except:
+                        print('Error: %d: %s' % (e.args[0], e.args[1]))
+
+                elif option_choice == "7":
+                    try:
+                        con7 = connection.cursor()
+
+                        device_id = input ("Please enter the device id of which you want to delete: ")
+
+                        con7.callproc("deleteDevice", (device_id))
+
+                        con7.close()
+                    except:
+                        print('Error: %d: %s' % (e.args[0], e.args[1]))
+               
+                
+                # Option to view all rooms
+                elif option_choice == "8":
+                    try:
+                        con8 = connection.cursor()
+                    
+                        query1 = "SELECT * FROM room"
+                    
+                        con8.execute(query1)
+                    
+                        for row in con8.fetchall():
+                            print(row)
+                        con8.close()
+                    except:
+                        print('Error: %d: %s' % (e.args[0], e.args[1]))
+                
+                # Option to view all hospitals
+                elif option_choice == "9":
+                    try:
+                        con9 = connection.cursor()
+                    
+                        query2 = "SELECT * FROM hospital"
+                    
+                        con9.execute(query2)
+                    
+                        for row in con9.fetchall():
+                            print(row)
+                        con9.close()
+                    except:
+                        print('Error: %d: %s' % (e.args[0], e.args[1]))
+                
+                elif option_choice == "10":
+                    try:
+                        con10 = connection.cursor()
+                    
+                        query3 = "SELECT * FROM med_device"
+                    
+                        con10.execute(query3)
+                    
+                        for row in con10.fetchall():
+                            print(row)
+                        con10.close()
+                    except:
+                        print('Error: %d: %s' % (e.args[0], e.args[1]))
+                
+                # Exit this menu
+                elif option_choice == "0":
+                    break
 
                 # After performing administrative tasks, give the option to go back to the main menu or exit
                 while True:
