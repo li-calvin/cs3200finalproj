@@ -146,7 +146,7 @@ def work(name):
                 filter_menu = True
                 while filter_menu:
                     print("\n-------- Filter --------")
-                    print("\nPlease select a filtering option:")
+                    print("Please select a filtering option:")
                     print("1. Filter devices by device type")
                     print("2. Filter devices by hospital")
                     print("3. Filter which room contains specified device")
@@ -329,54 +329,65 @@ def work(name):
                 if option_choice == "1":
                     try:
                         con = connection.cursor()
-                    
+
                         room_num = input ("Please enter the room number you want to add: ")
                         hosp_id = input ("Please enter the corresponding hospital id: ")
                         
                         con.callproc("addRoom", (room_num, hosp_id))
+                        print("Room successfully added ")
                     
                         con.close()
-                    except:
-                        print('Error: %d: %s' % (e.args[0], e.args[1]))
+                    except pymysql.Error as e:
+                        code, msg = e.args
+                        print("Error retrieving data from the database:", code, msg)
+
+
                 elif option_choice == "2":    
                     try:
                         con2 = connection.cursor()
                     
-                        room_num = input ("Please enter the room number you want to add: ")
+                        room_num = input ("Please enter the room number you want to delete: ")
                         hosp_id = input ("Please enter the corresponding hospital id: ")
 
                         con2.callproc("removeRoom", (room_num, hosp_id))
+                        print("Room successfully removed")
 
                         con2.close()
-                    except:
-                        print('Error: %d: %s' % (e.args[0], e.args[1]))
+                    except pymysql.Error as e:
+                        code, msg = e.args
+                        print("Error retrieving data from the database:", code, msg)
 
                 elif option_choice == "3":
                     try:
                         con3 = connection.cursor()
 
-                        hosp_id = input ("Please enter the new hospital's id: ")
                         hosp_name = input ("Please enter the new hospital's name: ")
+                        hosp_streetnum = input("Please enter the new hospital's street number: ")
+                        hosp_streetname = input("Please enter the new hospital's street name: ")
+                        hosp_town = input("Please enter the new hospital's town: ")
                         hosp_state = input ("Please enter the new hospital's state: ")
                         hosp_zipcode = input ("Please enter the new hospital's zipcode: ")
 
-                        con3.callproc("addHosp", (hosp_id, hosp_name, hosp_streetnum, hosp_streetname, hosp_town, hosp_state, hosp_zipcode))
-
+                        con3.callproc("addHosp", (hosp_name, hosp_streetnum, hosp_streetname, hosp_town, hosp_state, hosp_zipcode))
+                        print("Hospital successfully added ")
                         con3.close()
-                    except:
-                        print('Error: %d: %s' % (e.args[0], e.args[1]))
+                    except pymysql.Error as e:
+                        code, msg = e.args
+                        print("Error retrieving data from the database:", code, msg)
 
                 elif option_choice == "4":
                     try:
                         con4 = connection.cursor()
 
-                        hosp_id = input ("Please enter the hospital id that you wish to delete: ")
+                        hosp_id1 = input ("Please enter the hospital id that you wish to delete: ")
 
-                        con4.callproc("removeHospital", (hosp_id))
+                        con4.callproc("removeHospital", hosp_id1)
 
                         con4.close()
-                    except:
-                        print('Error: %d: %s' % (e.args[0], e.args[1])) 
+
+                    except pymysql.Error as e:
+                        code, msg = e.args
+                        print("Error retrieving data from the database:", code, msg)
 
 
                 elif option_choice == "5":
@@ -395,8 +406,9 @@ def work(name):
                         con5.callproc("createDevice", (did, dname, l, w, h, li, quant, hospid))
 
                         con5.close()
-                    except:
-                        print('Error: %d: %s' % (e.args[0], e.args[1]))
+                    except pymysql.Error as e:
+                        code, msg = e.args
+                        print("Error retrieving data from the database:", code, msg)
 
                 elif option_choice == "6":
                     try:
@@ -414,8 +426,9 @@ def work(name):
                         con6.callproc("updateDevice", (updated_did, updated_dname, updated_l, updated_w, updated_h, updated_li, updated_quant, updated_hospid))
 
                         con6.close()
-                    except:
-                        print('Error: %d: %s' % (e.args[0], e.args[1]))
+                    except pymysql.Error as e:
+                        code, msg = e.args
+                        print("Error retrieving data from the database:", code, msg)
 
                 elif option_choice == "7":
                     try:
@@ -426,8 +439,9 @@ def work(name):
                         con7.callproc("deleteDevice", (device_id))
 
                         con7.close()
-                    except:
-                        print('Error: %d: %s' % (e.args[0], e.args[1]))
+                    except pymysql.Error as e:
+                        code, msg = e.args
+                        print("Error retrieving data from the database:", code, msg)
                
                 
                 # Option to view all rooms
@@ -442,8 +456,9 @@ def work(name):
                         for row in con8.fetchall():
                             print(row)
                         con8.close()
-                    except:
-                        print('Error: %d: %s' % (e.args[0], e.args[1]))
+                    except pymysql.Error as e:
+                        code, msg = e.args
+                        print("Error retrieving data from the database:", code, msg)
                 
                 # Option to view all hospitals
                 elif option_choice == "9":
@@ -457,8 +472,9 @@ def work(name):
                         for row in con9.fetchall():
                             print(row)
                         con9.close()
-                    except:
-                        print('Error: %d: %s' % (e.args[0], e.args[1]))
+                    except pymysql.Error as e:
+                        code, msg = e.args
+                        print("Error retrieving data from the database:", code, msg)
                 
                 elif option_choice == "10":
                     try:
@@ -471,8 +487,9 @@ def work(name):
                         for row in con10.fetchall():
                             print(row)
                         con10.close()
-                    except:
-                        print('Error: %d: %s' % (e.args[0], e.args[1]))
+                    except pymysql.Error as e:
+                        code, msg = e.args
+                        print("Error retrieving data from the database:", code, msg)
                 
                 # Exit this menu
                 elif option_choice == "0":
@@ -718,7 +735,7 @@ def work(name):
                                     while True:
                                         print("\nAdd Examination")
                                         values = input(
-                                            "Enter patient symptom, medical device, examDate (e.g smpytom, 1007, 2023-06-20 14:30:00): ")
+                                            "Enter patient symptom, medical device, examDate (e.g smpytom, 1007, 2023-08-20 14:30:00): ")
                                         value_list = values.split(",")
 
                                         if len(value_list) != 3:
